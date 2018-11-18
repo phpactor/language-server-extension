@@ -7,7 +7,7 @@ use Phpactor\LanguageServer\Core\Extension;
 use Phpactor\LanguageServer\Core\Handlers;
 use Phpactor\LanguageServer\Core\Session\Manager;
 
-class CoreLanguageExtension implements Extension
+class LanguageExtension implements Extension
 {
     /**
      * @var Manager

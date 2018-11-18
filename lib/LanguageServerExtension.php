@@ -8,13 +8,15 @@ use Phpactor\Container\Extension;
 use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\Console\ConsoleExtension;
 use Phpactor\Extension\LanguageServer\Command\StartCommand;
-use Phpactor\Extension\LanguageServer\Extension\CoreLanguageExtension;
+use Phpactor\Extension\LanguageServer\Extension\LanguageExtension;
 use Phpactor\LanguageServer\Core\Session\Manager;
 use Phpactor\LanguageServer\LanguageServerBuilder;
 use Phpactor\MapResolver\Resolver;
 
 class LanguageServerExtension implements Extension
 {
+    const SERVICE_LANGUAGE_SERVER_BUILDER = 'language_server.builder';
+
     /**
      * {@inheritDoc}
      */
@@ -27,7 +29,7 @@ class LanguageServerExtension implements Extension
      */
     public function load(ContainerBuilder $container)
     {
-        $container->register('language_server.builder', function (Container $container) {
+        $container->register(self::SERVICE_LANGUAGE_SERVER_BUILDER, function (Container $container) {
             $builder = LanguageServerBuilder::create(
                 $container->get(LoggingExtension::SERVICE_LOGGER),
                 $container->get('language_server.session_manager')
@@ -43,7 +45,7 @@ class LanguageServerExtension implements Extension
         });
 
         $container->register('language_server.command.lsp_start', function (Container $container) {
-            return new StartCommand($container->get('language_server.builder'));
+            return new StartCommand($container->get(self::SERVICE_LANGUAGE_SERVER_BUILDER));
         }, [ ConsoleExtension::TAG_COMMAND => [ 'name' => StartCommand::NAME ]]);
 
         $container->register('language_server.session_manager', function (Container $container) {
@@ -51,7 +53,7 @@ class LanguageServerExtension implements Extension
         });
 
         $container->register('language_server.extension.core', function (Container $container) {
-            return new CoreLanguageExtension($container->get('language_server.session_manager'));
+            return new LanguageExtension($container->get('language_server.session_manager'));
         }, [ 'language_server.extension' => [] ]);
     }
 }
