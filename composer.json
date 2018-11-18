@@ -3,6 +3,7 @@
     "description": "Provides an LSP compatible Language Server Platform",
     "license": "MIT",
     "type": "phpactor-extension",
+    "minimum-stability": "dev",
     "authors": [
         {
             "name": "Daniel Leech",
@@ -11,7 +12,10 @@
     ],
 
     "require": {
-        "phpactor/container": "^1.0"
+        "phpactor/container": "^1.0",
+        "phpactor/language-server": "^1.0@dev",
+        "phpactor/console-extension": "dev-master",
+        "phpactor/logging-extension": "^0.3"
     },
     "require-dev": {
         "phpstan/phpstan": "^0.10.5",
@@ -29,6 +33,6 @@
         }
     },
     "extra": {
-        "phpactor.extension_class": "Phpactor\\Extension\\LanguageServer\\Language Server ExtensionExtension"
+        "phpactor.extension_class": "Phpactor\\Extension\\LanguageServer\\LanguageServerExtension"
     }
 }
