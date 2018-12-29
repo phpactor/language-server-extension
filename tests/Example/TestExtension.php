@@ -18,7 +18,10 @@ class TestExtension implements Extension
     {
         $container->register('test.handler', function (Container $container) {
             return new class implements Handler {
-                public function methods(): array { return []; }
+                public function methods(): array
+                {
+                    return [];
+                }
             };
         }, [ LanguageServerExtension::TAG_HANDLER => []]);
     }

@@ -41,12 +41,6 @@ class StartCommand extends Command
         $server->start();
     }
 
-    private function enableRecording($file, LanguageServerBuilder $builder)
-    {
-        assert(is_string($file));
-        $builder->recordTo($file);
-    }
-
     private function configureTcpServer($address, LanguageServerBuilder $builder)
     {
         assert(is_string($address));
