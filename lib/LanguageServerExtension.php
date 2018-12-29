@@ -8,14 +8,17 @@ use Phpactor\Container\Extension;
 use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\Console\ConsoleExtension;
 use Phpactor\Extension\LanguageServer\Command\StartCommand;
-use Phpactor\Extension\LanguageServer\Extension\LanguageExtension;
-use Phpactor\LanguageServer\Core\Session\Manager;
+use Phpactor\LanguageServer\Adapter\Evenement\EvenementEmitter;
+use Phpactor\LanguageServer\Core\Session\SessionManager;
 use Phpactor\LanguageServer\LanguageServerBuilder;
 use Phpactor\MapResolver\Resolver;
 
 class LanguageServerExtension implements Extension
 {
     const SERVICE_LANGUAGE_SERVER_BUILDER = 'language_server.builder';
+    const SERVICE_SESSION_MANAGER = 'language_server.session_manager';
+    const SERVICE_EVENT_EMITTER = 'language_server.event_emitter';
+    const TAG_HANDLER = 'language_server.handler';
 
     /**
      * {@inheritDoc}
@@ -32,13 +35,13 @@ class LanguageServerExtension implements Extension
         $container->register(self::SERVICE_LANGUAGE_SERVER_BUILDER, function (Container $container) {
             $builder = LanguageServerBuilder::create(
                 $container->get(LoggingExtension::SERVICE_LOGGER),
-                $container->get('language_server.session_manager')
+                $container->get(self::SERVICE_SESSION_MANAGER),
+                $container->get(self::SERVICE_EVENT_EMITTER)
             );
-            $builder->withCoreExtension();
 
-            foreach (array_keys($container->getServiceIdsForTag('language_server.extension')) as $extensionId) {
-                $extension = $container->get($extensionId);
-                $builder->addExtension($extension);
+            foreach (array_keys($container->getServiceIdsForTag(self::TAG_HANDLER)) as $handlerId) {
+                $handler = $container->get($handlerId);
+                $builder->addHandler($handler);
             }
 
             return $builder;
@@ -48,12 +51,12 @@ class LanguageServerExtension implements Extension
             return new StartCommand($container->get(self::SERVICE_LANGUAGE_SERVER_BUILDER));
         }, [ ConsoleExtension::TAG_COMMAND => [ 'name' => StartCommand::NAME ]]);
 
-        $container->register('language_server.session_manager', function (Container $container) {
-            return new Manager();
+        $container->register(self::SERVICE_SESSION_MANAGER, function (Container $container) {
+            return new SessionManager();
         });
 
-        $container->register('language_server.extension.core', function (Container $container) {
-            return new LanguageExtension($container->get('language_server.session_manager'));
-        }, [ 'language_server.extension' => [] ]);
+        $container->register(self::SERVICE_EVENT_EMITTER, function (Container $container) {
+            return new EvenementEmitter();
+        });
     }
 }
