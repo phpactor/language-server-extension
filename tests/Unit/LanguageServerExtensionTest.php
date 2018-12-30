@@ -8,7 +8,7 @@ use Phpactor\Container\PhpactorContainer;
 use Phpactor\Extension\Console\ConsoleExtension;
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\Extension\Logger\LoggingExtension;
-use Phpactor\LanguageServer\Core\Server\Server;
+use Phpactor\LanguageServer\Core\Server\LanguageServer;
 use Phpactor\LanguageServer\LanguageServerBuilder;
 use Phpactor\Extension\LanguageServer\Tests\Example\TestExtension;
 
@@ -20,7 +20,7 @@ class LanguageServerExtensionTest extends TestCase
         $builder = $this->createContainer()->get(LanguageServerExtension::SERVICE_LANGUAGE_SERVER_BUILDER);
         $this->assertInstanceOf(LanguageServerBuilder::class, $builder);
         $server = $builder->build();
-        $this->assertInstanceOf(Server::class, $server);
+        $this->assertInstanceOf(LanguageServer::class, $server);
     }
 
     public function testLoadsHandlers()
@@ -31,7 +31,7 @@ class LanguageServerExtensionTest extends TestCase
         );
         $this->assertInstanceOf(LanguageServerBuilder::class, $builder);
         $server = $builder->build();
-        $this->assertInstanceOf(Server::class, $server);
+        $this->assertInstanceOf(LanguageServer::class, $server);
     }
 
     private function createContainer(array $params = []): Container

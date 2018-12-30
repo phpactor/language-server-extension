@@ -13,7 +13,7 @@
 
     "require": {
         "phpactor/container": "^1.0",
-        "phpactor/language-server": "dev-amphp",
+        "phpactor/language-server": "~0.2",
         "phpactor/console-extension": "dev-master",
         "phpactor/logging-extension": "^0.3"
     },

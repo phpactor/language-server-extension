@@ -10,7 +10,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class StartCommand extends Command
 {
-    const NAME = 'server:start';
+    const NAME = 'language-server:start';
 
     /**
      * @var LanguageServerBuilder
@@ -26,16 +26,18 @@ class StartCommand extends Command
     protected function configure()
     {
         $this->setDescription('EXPERIMENTAL start a Phpactor language server');
-        $this->addOption('address', null, InputOption::VALUE_REQUIRED, 'Address to start TCP serve', '127.0.0.1:8888');
+        $this->addOption('address', null, InputOption::VALUE_REQUIRED, 'Address to start TCP serve');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $output->writeln('<info>Starting TCP server, use -vvv for verbose output</>');
         $builder = $this->languageServerBuilder;
 
-        $this->configureTcpServer($input->getOption('address'), $builder);
+        if ($input->getOption('address')) {
+            $this->configureTcpServer($input->getOption('address'), $builder);
+        }
 
-        $output->writeln('<info>Starting TCP server, use -vvv for verbose output</>');
 
         $server = $builder->build();
         $server->start();

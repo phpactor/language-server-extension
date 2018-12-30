@@ -38,6 +38,7 @@ class LanguageServerExtension implements Extension
                 $container->get(self::SERVICE_SESSION_MANAGER),
                 $container->get(self::SERVICE_EVENT_EMITTER)
             );
+            $builder->useDefaultHandlers();
 
             foreach (array_keys($container->getServiceIdsForTag(self::TAG_HANDLER)) as $handlerId) {
                 $handler = $container->get($handlerId);
