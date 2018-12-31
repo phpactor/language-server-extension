@@ -1,0 +1,25 @@
+#!/usr/bin/env php
+<?php
+
+require __DIR__ . '/../vendor/autoload.php';
+
+use Monolog\Handler\StreamHandler;
+use Phpactor\Container\PhpactorContainer;
+use Phpactor\Extension\Console\ConsoleExtension;
+use Phpactor\Extension\LanguageServer\LanguageServerExtension;
+use Phpactor\Extension\Logger\LoggingExtension;
+use Symfony\Component\Console\Application;
+
+$container = PhpactorContainer::fromExtensions([
+    ConsoleExtension::class,
+    LanguageServerExtension::class,
+    LoggingExtension::class,
+], []);
+
+$container->get(LoggingExtension::SERVICE_LOGGER)->pushHandler(new StreamHandler(STDERR));
+
+$application = new Application();
+$application->setCommandLoader(
+    $container->get(ConsoleExtension::SERVICE_COMMAND_LOADER)
+);
+$application->run();

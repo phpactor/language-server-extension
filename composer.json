@@ -14,7 +14,7 @@
     "require": {
         "phpactor/container": "^1.0",
         "phpactor/language-server": "~0.2",
-        "phpactor/console-extension": "dev-master",
+        "phpactor/console-extension": "~0.1",
         "phpactor/logging-extension": "^0.3"
     },
     "require-dev": {
