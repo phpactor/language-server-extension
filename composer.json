@@ -13,8 +13,8 @@
 
     "require": {
         "phpactor/container": "^1.0",
-        "phpactor/language-server": "^1.0@dev",
-        "phpactor/console-extension": "dev-master",
+        "phpactor/language-server": "~0.2",
+        "phpactor/console-extension": "~0.1",
         "phpactor/logging-extension": "^0.3"
     },
     "require-dev": {
@@ -30,7 +30,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Phpactor\\Extension\\LanguageServer\\Tests\\": "tests/"
+            "Phpactor\\Extension\\LanguageServer\\Tests\\": "tests/",
+            "Phpactor\\Extension\\LanguageServer\\Example\\": "example/"
         }
     },
     "extra": {
