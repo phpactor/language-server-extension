@@ -1,6 +1,6 @@
 <?php
 
-namespace Phpactor\Tests\Unit\Extension\LanguageServer\Helper;
+namespace Phpactor\Extension\LanguageServer\Tests\Unit\Helper;
 
 use LanguageServerProtocol\Position;
 use PHPUnit\Framework\TestCase;
