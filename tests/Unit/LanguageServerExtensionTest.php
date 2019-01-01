@@ -8,6 +8,8 @@ use Phpactor\Container\PhpactorContainer;
 use Phpactor\Extension\Console\ConsoleExtension;
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\Extension\Logger\LoggingExtension;
+use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
+use Phpactor\LanguageServer\Core\Rpc\RequestMessage;
 use Phpactor\LanguageServer\Core\Server\LanguageServer;
 use Phpactor\LanguageServer\LanguageServerBuilder;
 use Phpactor\Extension\LanguageServer\Tests\Example\TestExtension;
@@ -21,6 +23,24 @@ class LanguageServerExtensionTest extends TestCase
         $this->assertInstanceOf(LanguageServerBuilder::class, $builder);
         $server = $builder->build();
         $this->assertInstanceOf(LanguageServer::class, $server);
+    }
+
+    public function testInitializesLanguageServer()
+    {
+        /** @var LanguageServerBuilder $builder */
+        $builder = $this->createContainer()->get(
+            LanguageServerExtension::SERVICE_LANGUAGE_SERVER_BUILDER
+        );
+
+        $this->assertInstanceOf(LanguageServerBuilder::class, $builder);
+
+        $dispatcher = $builder->buildDispatcher();
+
+        $responses = iterator_to_array($dispatcher->dispatch(new RequestMessage(1, 'initialize', [
+            'rootUri' => __DIR__,
+        ])));
+
+        $this->assertNull($responses[0]->responseError);
     }
 
     public function testLoadsHandlers()
@@ -40,7 +60,8 @@ class LanguageServerExtensionTest extends TestCase
             TestExtension::class,
             ConsoleExtension::class,
             LanguageServerExtension::class,
-            LoggingExtension::class
+            LoggingExtension::class,
+            FilePathResolverExtension::class
         ], $params);
     }
 }

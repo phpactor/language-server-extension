@@ -6,6 +6,7 @@ use Phpactor\LanguageServer\LanguageServerBuilder;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class StartCommand extends Command
@@ -33,12 +34,15 @@ class StartCommand extends Command
     {
         $builder = $this->languageServerBuilder;
 
-        $output->writeln('<info>Starting language server, use -vvv for verbose output</>');
+        if ($output instanceof ConsoleOutput) {
+            $output->getErrorOutput()->writeln(
+                '<info>Starting language server, use -vvv for verbose output</>'
+            );
+        }
 
         if ($input->getOption('address')) {
             $this->configureTcpServer($input->getOption('address'), $builder);
         }
-
 
         $server = $builder->build();
         $server->start();
