@@ -5,6 +5,7 @@ namespace Phpactor\Extension\LanguageServer\Handler;
 use LanguageServerProtocol\MessageType;
 use Phpactor\Container\Container;
 use Phpactor\Container\PhpactorContainer;
+use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
 use Phpactor\LanguageServer\Core\Event\EventEmitter;
 use Phpactor\LanguageServer\Core\Handler\InitializeHandler as BaseInitializeHandler;
@@ -55,7 +56,11 @@ class InitializeHandler extends BaseInitializeHandler
             ),
             $parameters
         );
+        $session = new Session($rootUri, $processId, $container);
+        $container->get(
+            LanguageServerExtension::SERVICE_SESSION_MANAGER
+        )->load($session);
 
-        return new Session($rootUri, $processId, $container);
+        return $session;
     }
 }
