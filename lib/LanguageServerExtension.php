@@ -6,6 +6,7 @@ use Phpactor\Container\Container;
 use Phpactor\Container\ContainerBuilder;
 use Phpactor\Container\Extension;
 use Phpactor\Extension\LanguageServer\Handler\PhpactorHandlerLoader;
+use Phpactor\Extension\LanguageServer\Handler\SessionHandler;
 use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\Console\ConsoleExtension;
 use Phpactor\Extension\LanguageServer\Command\StartCommand;
@@ -77,6 +78,10 @@ class LanguageServerExtension implements Extension
 
         $container->register('language_server.session.handler.text_document', function (Container $container) {
             return new TextDocumentHandler($container->get(self::SERVICE_SESSION_WORKSPACE));
+        }, [ self::TAG_SESSION_HANDLER => []]);
+
+        $container->register('language_server.session.handler.session', function (Container $container) {
+            return new SessionHandler($container);
         }, [ self::TAG_SESSION_HANDLER => []]);
     }
 }

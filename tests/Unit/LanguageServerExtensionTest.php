@@ -13,7 +13,7 @@ use Phpactor\LanguageServer\LanguageServerBuilder;
 use Phpactor\Extension\LanguageServer\Tests\Example\TestExtension;
 use Phpactor\LanguageServer\Test\ServerTester;
 
-class LanguageServerExtensionTest extends TestCase
+class LanguageServerExtensionTest extends LanguageServerTestCase
 {
     public function testInitializesLanguageServer()
     {
@@ -36,29 +36,5 @@ class LanguageServerExtensionTest extends TestCase
         $this->assertCount(2, $responses);
 
         $this->assertTrue($serverTester->assertSuccess($responses));
-    }
-
-    private function createContainer(array $params = []): Container
-    {
-        return PhpactorContainer::fromExtensions([
-            TestExtension::class,
-            ConsoleExtension::class,
-            LanguageServerExtension::class,
-            LoggingExtension::class,
-            FilePathResolverExtension::class
-        ], $params);
-    }
-
-    private function createTester(): ServerTester
-    {
-        $builder = $this->createContainer()->get(
-            LanguageServerExtension::SERVICE_LANGUAGE_SERVER_BUILDER
-        );
-        
-        $this->assertInstanceOf(LanguageServerBuilder::class, $builder);
-        
-        $serverTester = $builder->buildServerTester();
-
-        return $serverTester;
     }
 }
