@@ -5,6 +5,7 @@ namespace Phpactor\Extension\LanguageServer\Handler;
 use Generator;
 use LanguageServerProtocol\MessageType;
 use Phpactor\Container\Container;
+use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
 use Phpactor\LanguageServer\Core\Handler\Handler;
 use Phpactor\LanguageServer\Core\Rpc\NotificationMessage;
 
@@ -32,10 +33,35 @@ class SessionHandler implements Handler
 
     public function dumpConfig(): Generator
     {
+        $message = [
+            'Config Dump',
+            '===========',
+            '',
+            'File Paths',
+            '----------',
+            '',
+        ];
+        $paths = [];
+
+        foreach (
+            $this->container->get(
+                FilePathResolverExtension::SERVICE_EXPANDERS
+            )->toArray() as $tokenName => $value
+        ) {
+            $message[] = sprintf('%s: %s', $tokenName, $value);
+        }
+
+        $message[] = '';
+        $message[] = 'Config';
+        $message[] = '------';
+
+
+        $message[] = json_encode($this->container->getParameters(), JSON_PRETTY_PRINT);
+
         yield null;
         yield new NotificationMessage('window/logMessage', [
             'type' => MessageType::INFO,
-            'message' => json_encode($this->container->getParameters(), JSON_PRETTY_PRINT),
+            'message' => implode(PHP_EOL, $message),
         ]);
     }
 }
