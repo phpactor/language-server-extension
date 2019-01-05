@@ -9,7 +9,6 @@ use Phpactor\Extension\Console\ConsoleExtension;
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
-use Phpactor\LanguageServer\Core\Server\LanguageServer;
 use Phpactor\LanguageServer\LanguageServerBuilder;
 use Phpactor\Extension\LanguageServer\Tests\Example\TestExtension;
 use Phpactor\LanguageServer\Test\ServerTester;
