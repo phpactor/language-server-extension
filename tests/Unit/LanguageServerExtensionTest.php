@@ -13,6 +13,7 @@ use Phpactor\LanguageServer\Core\Rpc\RequestMessage;
 use Phpactor\LanguageServer\Core\Server\LanguageServer;
 use Phpactor\LanguageServer\LanguageServerBuilder;
 use Phpactor\Extension\LanguageServer\Tests\Example\TestExtension;
+use Phpactor\LanguageServer\Test\ServerTester;
 
 class LanguageServerExtensionTest extends TestCase
 {
@@ -27,7 +28,6 @@ class LanguageServerExtensionTest extends TestCase
 
     public function testInitializesLanguageServer()
     {
-        /** @var LanguageServerBuilder $builder */
         $builder = $this->createContainer()->get(
             LanguageServerExtension::SERVICE_LANGUAGE_SERVER_BUILDER
         );
@@ -35,23 +35,25 @@ class LanguageServerExtensionTest extends TestCase
         $this->assertInstanceOf(LanguageServerBuilder::class, $builder);
 
         $dispatcher = $builder->buildDispatcher();
-
-        $responses = iterator_to_array($dispatcher->dispatch(new RequestMessage(1, 'initialize', [
-            'rootUri' => __DIR__,
-        ])));
-
-        $this->assertNull($responses[0]->responseError);
+        $serverTester = new ServerTester($builder);
+        $serverTester->initialize();
     }
 
     public function testLoadsHandlers()
     {
-        $container = $this->createContainer();
-        $builder = $container->get(
+        $builder = $this->createContainer()->get(
             LanguageServerExtension::SERVICE_LANGUAGE_SERVER_BUILDER
         );
+
         $this->assertInstanceOf(LanguageServerBuilder::class, $builder);
-        $server = $builder->build();
-        $this->assertInstanceOf(LanguageServer::class, $server);
+
+        $dispatcher = $builder->buildDispatcher();
+        $serverTester = new ServerTester($builder);
+        $serverTester->initialize();
+        $responses = $serverTester->dispatch('test', []);
+        $this->assertCount(1, $responses);
+
+        $this->assertTrue($serverTester->assertSuccess($responses));
     }
 
     private function createContainer(array $params = []): Container
