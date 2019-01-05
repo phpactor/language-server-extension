@@ -16,57 +16,25 @@ use Phpactor\LanguageServer\Test\ServerTester;
 
 class LanguageServerExtensionTest extends TestCase
 {
-    public function testProvidesLanguageServerBuilder()
-    {
-        /** @var LanguageServerBuilder $builder */
-        $builder = $this->createContainer()->get(LanguageServerExtension::SERVICE_LANGUAGE_SERVER_BUILDER);
-        $this->assertInstanceOf(LanguageServerBuilder::class, $builder);
-        $server = $builder->build();
-        $this->assertInstanceOf(LanguageServer::class, $server);
-    }
-
     public function testInitializesLanguageServer()
     {
-        $builder = $this->createContainer()->get(
-            LanguageServerExtension::SERVICE_LANGUAGE_SERVER_BUILDER
-        );
-
-        $this->assertInstanceOf(LanguageServerBuilder::class, $builder);
-
-        $dispatcher = $builder->buildDispatcher();
-        $serverTester = new ServerTester($builder);
+        $serverTester = $this->createTester();
         $serverTester->initialize();
     }
 
     public function testLoadsTextDocuments()
     {
-        $builder = $this->createContainer()->get(
-            LanguageServerExtension::SERVICE_LANGUAGE_SERVER_BUILDER
-        );
-        $builder->enableTextDocumentHandler();
-
-        $this->assertInstanceOf(LanguageServerBuilder::class, $builder);
-
-        $dispatcher = $builder->buildDispatcher();
-        $serverTester = new ServerTester($builder);
+        $serverTester = $this->createTester();
         $responses = $serverTester->initialize();
-        $responses = $serverTester->dispatch('textDocument/didOpen', []);
         $serverTester->assertSuccess($responses);
     }
 
     public function testLoadsHandlers()
     {
-        $builder = $this->createContainer()->get(
-            LanguageServerExtension::SERVICE_LANGUAGE_SERVER_BUILDER
-        );
-
-        $this->assertInstanceOf(LanguageServerBuilder::class, $builder);
-
-        $dispatcher = $builder->buildDispatcher();
-        $serverTester = new ServerTester($builder);
+        $serverTester = $this->createTester();
         $serverTester->initialize();
         $responses = $serverTester->dispatch('test', []);
-        $this->assertCount(1, $responses);
+        $this->assertCount(2, $responses);
 
         $this->assertTrue($serverTester->assertSuccess($responses));
     }
@@ -80,5 +48,18 @@ class LanguageServerExtensionTest extends TestCase
             LoggingExtension::class,
             FilePathResolverExtension::class
         ], $params);
+    }
+
+    private function createTester(): ServerTester
+    {
+        $builder = $this->createContainer()->get(
+            LanguageServerExtension::SERVICE_LANGUAGE_SERVER_BUILDER
+        );
+        
+        $this->assertInstanceOf(LanguageServerBuilder::class, $builder);
+        
+        $serverTester = $builder->buildServerTester();
+
+        return $serverTester;
     }
 }
