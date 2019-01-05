@@ -9,6 +9,8 @@ use Phpactor\Extension\LanguageServer\Handler\PhpactorHandlerLoader;
 use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\Console\ConsoleExtension;
 use Phpactor\Extension\LanguageServer\Command\StartCommand;
+use Phpactor\LanguageServer\Core\Session\Workspace;
+use Phpactor\LanguageServer\Handler\TextDocument\TextDocumentHandler;
 use Phpactor\LanguageServer\LanguageServerBuilder;
 use Phpactor\MapResolver\Resolver;
 
@@ -20,6 +22,7 @@ class LanguageServerExtension implements Extension
     const TAG_SESSION_HANDLER = 'language_server.session_handler';
 
     const PARAM_WELCOME_MESSAGE = 'language_server.welcome_message';
+    const SERVICE_SESSION_WORKSPACE = 'language_server.session.workspace';
 
     /**
      * {@inheritDoc}
@@ -38,6 +41,7 @@ class LanguageServerExtension implements Extension
     {
         $this->registerServer($container);
         $this->registerCommand($container);
+        $this->registerSession($container);
     }
 
     private function registerServer(ContainerBuilder $container)
@@ -46,7 +50,6 @@ class LanguageServerExtension implements Extension
             $builder = LanguageServerBuilder::create(
                 $container->get(LoggingExtension::SERVICE_LOGGER)
             );
-            $builder->enableTextDocumentHandler();
             $builder->addHandlerLoader(
                 $container->get('language_server.handler_loader.phpactor')
             );
@@ -64,5 +67,16 @@ class LanguageServerExtension implements Extension
         $container->register('language_server.command.lsp_start', function (Container $container) {
             return new StartCommand($container->get(self::SERVICE_LANGUAGE_SERVER_BUILDER));
         }, [ ConsoleExtension::TAG_COMMAND => [ 'name' => StartCommand::NAME ]]);
+    }
+
+    private function registerSession(ContainerBuilder $container)
+    {
+        $container->register(self::SERVICE_SESSION_WORKSPACE, function (Container $container) {
+            return new Workspace();
+        });
+
+        $container->register('language_server.session.handler.text_document', function (Container $container) {
+            return new TextDocumentHandler($container->get(self::SERVICE_SESSION_WORKSPACE));
+        }, [ self::TAG_SESSION_HANDLER => []]);
     }
 }

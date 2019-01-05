@@ -38,6 +38,22 @@ class LanguageServerExtensionTest extends TestCase
         $serverTester->initialize();
     }
 
+    public function testLoadsTextDocuments()
+    {
+        $builder = $this->createContainer()->get(
+            LanguageServerExtension::SERVICE_LANGUAGE_SERVER_BUILDER
+        );
+        $builder->enableTextDocumentHandler();
+
+        $this->assertInstanceOf(LanguageServerBuilder::class, $builder);
+
+        $dispatcher = $builder->buildDispatcher();
+        $serverTester = new ServerTester($builder);
+        $responses = $serverTester->initialize();
+        $responses = $serverTester->dispatch('textDocument/didOpen', []);
+        $serverTester->assertSuccess($responses);
+    }
+
     public function testLoadsHandlers()
     {
         $builder = $this->createContainer()->get(
