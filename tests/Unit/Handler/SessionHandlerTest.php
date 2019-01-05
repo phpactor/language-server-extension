@@ -2,7 +2,6 @@
 
 namespace Phpactor\Extension\LanguageServer\Tests\Unit\Handler;
 
-use PHPUnit\Framework\TestCase;
 use Phpactor\Extension\LanguageServer\Tests\Unit\LanguageServerTestCase;
 
 class SessionHandlerTest extends LanguageServerTestCase
