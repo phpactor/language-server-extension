@@ -5,14 +5,10 @@ namespace Phpactor\Extension\LanguageServer;
 use Phpactor\Container\Container;
 use Phpactor\Container\ContainerBuilder;
 use Phpactor\Container\Extension;
-use Phpactor\Extension\LanguageServer\Handler\InitializeHandler;
 use Phpactor\Extension\LanguageServer\Handler\PhpactorHandlerLoader;
 use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\Console\ConsoleExtension;
 use Phpactor\Extension\LanguageServer\Command\StartCommand;
-use Phpactor\LanguageServer\Core\Handler\ExitHandler;
-use Phpactor\LanguageServer\Core\Handler\SystemHandler;
-use Phpactor\LanguageServer\Core\Handler\TextDocumentHandler;
 use Phpactor\LanguageServer\LanguageServerBuilder;
 use Phpactor\MapResolver\Resolver;
 
@@ -44,18 +40,6 @@ class LanguageServerExtension implements Extension
         $this->registerCommand($container);
     }
 
-    private function addDefaultHandlers(LanguageServerBuilder $builder, Container $container)
-    {
-        $builder->addHandler(
-            new TextDocumentHandler(
-                $container->get(self::SERVICE_EVENT_EMITTER),
-                $container->get(self::SERVICE_SESSION_MANAGER)
-            )
-        );
-        $builder->addHandler(new ExitHandler());
-        $builder->addHandler(new SystemHandler($container->get(self::SERVICE_SESSION_MANAGER)));
-    }
-
     private function registerServer(ContainerBuilder $container)
     {
         $container->register(self::SERVICE_LANGUAGE_SERVER_BUILDER, function (Container $container) {
@@ -63,7 +47,9 @@ class LanguageServerExtension implements Extension
                 $container->get(LoggingExtension::SERVICE_LOGGER)
             );
             $builder->enableTextDocumentHandler();
-            $builder->addHandlerLoader($container->get('language_server.handler_loader.phpactor'));
+            $builder->addHandlerLoader(
+                $container->get('language_server.handler_loader.phpactor')
+            );
         
             return $builder;
         });
