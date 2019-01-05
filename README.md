@@ -92,3 +92,11 @@ You can get some status information from the server by issuing:
 ```
 
 (assuming you are using COC for VIM).
+
+## Dump Config
+
+Dump the configuration to the client via. `window/logMessage`:
+
+```
+:call CocRequest('phpactor','system/configDump', [])
+```
