@@ -38,7 +38,7 @@ class StartCommand extends Command
 
         $this->logMessage($output, '<info>Starting language server, use -vvv for verbose output</>');
 
-        if ($input->hasOption('record')) {
+        if ($input->hasParameterOption('--record')) {
             $filename = $this->assertIsWritable($input->getOption('record'));
             $this->logMessage($output, sprintf('<info>Recording output to:</> %s', $filename));
             $builder->recordTo($filename);
