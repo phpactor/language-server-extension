@@ -3,6 +3,7 @@
 namespace Phpactor\Extension\LanguageServer\Command;
 
 use Phpactor\LanguageServer\LanguageServerBuilder;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -28,16 +29,19 @@ class StartCommand extends Command
     {
         $this->setDescription('Start Language Server');
         $this->addOption('address', null, InputOption::VALUE_REQUIRED, 'Start a TCP server at this address (e.g. 127.0.0.1:0)');
+        $this->addOption('record', null, InputOption::VALUE_OPTIONAL, 'Record requests to log');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $builder = $this->languageServerBuilder;
 
-        if ($output instanceof ConsoleOutput) {
-            $output->getErrorOutput()->writeln(
-                '<info>Starting language server, use -vvv for verbose output</>'
-            );
+        $this->logMessage($output, '<info>Starting language server, use -vvv for verbose output</>');
+
+        if ($input->hasOption('record')) {
+            $filename = $this->assertIsWritable($input->getOption('record'));
+            $this->logMessage($output, sprintf('<info>Recording output to:</> %s', $filename));
+            $builder->recordTo($filename);
         }
 
         if ($input->getOption('address')) {
@@ -52,5 +56,31 @@ class StartCommand extends Command
     {
         assert(is_string($address));
         $builder->tcpServer($address);
+    }
+
+    private function assertIsWritable($filename = null): string
+    {
+        if (null === $filename) {
+            $filename = 'language-server-request.log';
+        }
+
+        if (!file_exists(dirname($filename))) {
+            throw new RuntimeException(sprintf('Directory "%s" does not exist', dirname($filename)));
+        }
+
+        if (file_exists($filename) && !is_writable($filename)) {
+            throw new RuntimeException(sprintf('File at "%s" is not writable', $filename));
+        }
+
+        return $filename;
+    }
+
+    private function logMessage(OutputInterface $output, string $message)
+    {
+        if ($output instanceof ConsoleOutput) {
+            $output->getErrorOutput()->writeln(
+                $message
+            );
+        }
     }
 }

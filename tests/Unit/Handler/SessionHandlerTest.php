@@ -13,6 +13,5 @@ class SessionHandlerTest extends LanguageServerTestCase
         $responses = $tester->dispatch('session/dumpConfig', []);
         $tester->assertSuccess($responses);
         $this->assertCount(2, $responses);
-        var_dump($responses);
     }
 }
