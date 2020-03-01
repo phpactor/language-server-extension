@@ -26,8 +26,8 @@ Extend
 By default the language server doesn't provide any functionality:
 
 ```
-$ phpactor extension:install phpactor/language-server-completion
-$ phpactor extension:install phpactor/language-server-reference-finder
+$ phpactor extension:install phpactor/language-server-completion-extension
+$ phpactor extension:install phpactor/language-server-reference-finder-extension
 ```
 
 Now it can provide completion and goto definition, except we haven't got any
