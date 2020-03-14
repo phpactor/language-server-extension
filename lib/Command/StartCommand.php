@@ -50,6 +50,8 @@ class StartCommand extends Command
 
         $server = $builder->build();
         $server->start();
+
+        return 0;
     }
 
     private function configureTcpServer($address, LanguageServerBuilder $builder)
