@@ -35,6 +35,13 @@
             "Phpactor\\Extension\\LanguageServer\\Example\\": "example/"
         }
     },
+    "scripts": {
+        "integrate": [
+            "./vendor/bin/phpunit",
+            "./vendor/bin/phpstan analyze",
+            "./vendor/bin/php-cs-fixer fix"
+        ]
+    },
     "extra": {
         "phpactor.extension_class": "Phpactor\\Extension\\LanguageServer\\LanguageServerExtension",
         "branch-alias": {
