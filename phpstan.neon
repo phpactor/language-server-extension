@@ -1,2 +1,8 @@
 parameters:
-    paths: [ lib ]
+    level: 7
+    inferPrivatePropertyTypeFromConstructor: true
+    checkMissingIterableValueType: false
+        
+    paths:
+        - lib
+
