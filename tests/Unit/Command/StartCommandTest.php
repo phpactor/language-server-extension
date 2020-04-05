@@ -26,4 +26,12 @@ class StartCommandTest extends LanguageServerTestCase
             '--record' => 'foobar/ads',
         ]);
     }
+
+    public function testDebugOptions()
+    {
+        $this->tester->execute([
+            '--throw' => true,
+            '--no-loop' => true,
+        ]);
+    }
 }
