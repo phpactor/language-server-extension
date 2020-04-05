@@ -16,7 +16,8 @@
         "phpactor/language-server": "~0.2",
         "phpactor/console-extension": "~0.1",
         "phpactor/logging-extension": "~0.3",
-        "phpactor/file-path-resolver-extension": "~0.2"
+        "phpactor/file-path-resolver-extension": "~0.2",
+        "phpactor/text-document": "^1.1"
     },
     "require-dev": {
         "phpstan/phpstan": "^0.12.0",

@@ -9,6 +9,7 @@ use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
 use Phpactor\LanguageServer\Core\Handler\HandlerLoader;
 use Phpactor\LanguageServer\Core\Handler\Handlers;
+use Phpactor\TextDocument\TextDocumentUri;
 
 class PhpactorHandlerLoader implements HandlerLoader
 {
@@ -40,7 +41,7 @@ class PhpactorHandlerLoader implements HandlerLoader
     {
         $container = $this->container;
         $parameters = $container->getParameters();
-        $parameters[FilePathResolverExtension::PARAM_PROJECT_ROOT] = $rootUri;
+        $parameters[FilePathResolverExtension::PARAM_PROJECT_ROOT] = TextDocumentUri::fromString($rootUri)->path();
 
         $container = PhpactorContainer::fromExtensions(
             $container->getParameter(
