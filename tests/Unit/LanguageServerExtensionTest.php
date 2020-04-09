@@ -21,9 +21,7 @@ class LanguageServerExtensionTest extends LanguageServerTestCase
     {
         $serverTester = $this->createTester();
         $serverTester->initialize();
-        $responses = $serverTester->dispatch('test', []);
-        $this->assertCount(2, $responses);
-
-        $this->assertTrue($serverTester->assertSuccess($responses));
+        $response = $serverTester->dispatchAndWait(1, 'test', []);
+        $this->assertTrue($serverTester->assertSuccess($response));
     }
 }

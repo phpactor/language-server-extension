@@ -2,7 +2,8 @@
 
 namespace Phpactor\Extension\LanguageServer\Handler;
 
-use Generator;
+use Amp\Promise;
+use Amp\Success;
 use LanguageServerProtocol\MessageType;
 use Phpactor\Container\Container;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
@@ -31,7 +32,10 @@ class SessionHandler implements Handler
         ];
     }
 
-    public function dumpConfig(): Generator
+    /**
+     * @return Promise<NotificationMessage>
+     */
+    public function dumpConfig(): Promise
     {
         $message = [
             'Config Dump',
@@ -58,10 +62,9 @@ class SessionHandler implements Handler
 
         $message[] = json_encode($this->container->getParameters(), JSON_PRETTY_PRINT);
 
-        yield null;
-        yield new NotificationMessage('window/logMessage', [
+        return new Success(new NotificationMessage('window/logMessage', [
             'type' => MessageType::INFO,
             'message' => implode(PHP_EOL, $message),
-        ]);
+        ]));
     }
 }

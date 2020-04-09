@@ -2,6 +2,7 @@
 
 namespace Phpactor\Extension\LanguageServer\Tests\Example;
 
+use Amp\Success;
 use LanguageServerProtocol\MessageType;
 use Phpactor\Container\Container;
 use Phpactor\Container\ContainerBuilder;
@@ -27,11 +28,10 @@ class TestExtension implements Extension
 
                 public function test()
                 {
-                    yield null;
-                    yield new NotificationMessage('window/showMessage', [
+                    return new Success(new NotificationMessage('window/showMessage', [
                         'type' => MessageType::INFO,
                         'message' => 'Hallo',
-                    ]);
+                    ]));
                 }
             };
         }, [ LanguageServerExtension::TAG_SESSION_HANDLER => []]);
