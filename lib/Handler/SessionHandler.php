@@ -9,6 +9,7 @@ use Phpactor\Container\Container;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
 use Phpactor\LanguageServer\Core\Handler\Handler;
 use Phpactor\LanguageServer\Core\Rpc\NotificationMessage;
+use Phpactor\LanguageServer\Core\Server\Transmitter\MessageTransmitter;
 
 class SessionHandler implements Handler
 {
@@ -33,9 +34,9 @@ class SessionHandler implements Handler
     }
 
     /**
-     * @return Promise<NotificationMessage>
+     * @return Promise<null>
      */
-    public function dumpConfig(): Promise
+    public function dumpConfig(MessageTransmitter $transmitter): Promise
     {
         $message = [
             'Config Dump',
@@ -62,9 +63,11 @@ class SessionHandler implements Handler
 
         $message[] = json_encode($this->container->getParameters(), JSON_PRETTY_PRINT);
 
-        return new Success(new NotificationMessage('window/logMessage', [
+        $transmitter->transmit(new NotificationMessage('window/logMessage', [
             'type' => MessageType::INFO,
             'message' => implode(PHP_EOL, $message),
         ]));
+
+        return new Success(null);
     }
 }
