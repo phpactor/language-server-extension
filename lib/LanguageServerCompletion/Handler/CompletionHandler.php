@@ -95,7 +95,7 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
                     $this->suggestionNameFormatter->format($suggestion),
                     PhpactorToLspCompletionType::fromPhpactorType($suggestion->type()),
                     $suggestion->shortDescription(),
-                    null,
+                    $suggestion->documentation(),
                     null,
                     null,
                     null,

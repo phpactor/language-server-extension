@@ -81,6 +81,8 @@ class LanguageServerCompletionExtension implements Extension
                 $container->get(LanguageServerExtension::SERVICE_SESSION_WORKSPACE),
                 ReflectorBuilder::create()->build()
             );
-        }, [ WorseReflectionExtension::TAG_SOURCE_LOCATOR => []]);
+        }, [ WorseReflectionExtension::TAG_SOURCE_LOCATOR => [
+            'priority' => 255,
+        ]]);
     }
 }
