@@ -5,9 +5,18 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Monolog\Handler\StreamHandler;
 use Phpactor\Container\PhpactorContainer;
+use Phpactor\Extension\ClassToFile\ClassToFileExtension;
+use Phpactor\Extension\CompletionWorse\CompletionWorseExtension;
+use Phpactor\Extension\Completion\CompletionExtension;
+use Phpactor\Extension\ComposerAutoloader\ComposerAutoloaderExtension;
 use Phpactor\Extension\Console\ConsoleExtension;
+use Phpactor\Extension\LanguageServerCompletion\LanguageServerCompletionExtension;
+use Phpactor\Extension\LanguageServerReferenceFinder\LanguageServerReferenceFinderExtension;
+use Phpactor\Extension\LanguageServerWorseReflection\LanguageServerWorseReflectionExtension;
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\Extension\Logger\LoggingExtension;
+use Phpactor\Extension\ReferenceFinder\ReferenceFinderExtension;
+use Phpactor\Extension\WorseReflection\WorseReflectionExtension;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
 use Symfony\Component\Console\Application;
 
@@ -16,8 +25,17 @@ $container = PhpactorContainer::fromExtensions([
     LanguageServerExtension::class,
     LoggingExtension::class,
     FilePathResolverExtension::class,
+    LanguageServerCompletionExtension::class,
+    LanguageServerReferenceFinderExtension::class,
+    LanguageServerWorseReflectionExtension::class,
+    CompletionExtension::class,
+    WorseReflectionExtension::class,
+    ClassToFileExtension::class,
+    ComposerAutoloaderExtension::class,
+    ReferenceFinderExtension::class,
 ], [
-    FilePathResolverExtension::PARAM_PROJECT_ROOT => __DIR__
+    FilePathResolverExtension::PARAM_PROJECT_ROOT => __DIR__,
+    FilePathResolverExtension::PARAM_APPLICATION_ROOT => __DIR__ .'/..',
 ]);
 
 $container->get(LoggingExtension::SERVICE_LOGGER)->pushHandler(new StreamHandler(STDERR));
