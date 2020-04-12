@@ -30,13 +30,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Phpactor\\Extension\\LanguageServer\\": "lib/"
+            "Phpactor\\Extension\\": "lib/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Phpactor\\Extension\\LanguageServer\\Tests\\": "tests/",
-            "Phpactor\\Extension\\LanguageServer\\Example\\": "example/"
+            "Phpactor\\Extension\\LanguageServer\\Tests\\": "tests/LanguageServer/"
         }
     },
     "scripts": {
