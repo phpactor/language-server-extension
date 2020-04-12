@@ -1,6 +1,6 @@
 <?php
 
-namespace Phpactor\Extension\LanguageServerCompletion\SourceLocator;
+namespace Phpactor\Extension\LanguageServerWorseReflection\SourceLocator;
 
 use LanguageServerProtocol\TextDocumentItem;
 use Phpactor\LanguageServer\Core\Session\Workspace;
