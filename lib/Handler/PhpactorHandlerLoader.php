@@ -43,6 +43,13 @@ class PhpactorHandlerLoader implements HandlerLoader
         $parameters = $container->getParameters();
         $parameters[FilePathResolverExtension::PARAM_PROJECT_ROOT] = TextDocumentUri::fromString($rootUri)->path();
 
+        if (class_exists('Phpactor\Extension\WorseReflection\WorseReflectionExtension')) {
+            // this is necessary for Phpactor RPC (single request process) but
+            // not with the language server (which has up-to-date sources in
+            // the workspace)
+            $parameters['worse_reflection.enable_context_location'] = false;
+        }
+
         $container = PhpactorContainer::fromExtensions(
             $container->getParameter(
                 PhpactorContainer::PARAM_EXTENSION_CLASSES
