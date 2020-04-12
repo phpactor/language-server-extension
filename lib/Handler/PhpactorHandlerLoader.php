@@ -25,7 +25,7 @@ class PhpactorHandlerLoader implements HandlerLoader
 
     public function load(InitializeParams $params): Handlers
     {
-        $container = $this->createContainer($params->rootUri);
+        $container = $this->createContainer($params->rootUri, $params->initializationOptions);
         $handlers = [];
 
         foreach (array_keys(
@@ -37,7 +37,7 @@ class PhpactorHandlerLoader implements HandlerLoader
         return new Handlers($handlers);
     }
 
-    protected function createContainer(string $rootUri): Container
+    protected function createContainer(string $rootUri, array $config): Container
     {
         $container = $this->container;
         $parameters = $container->getParameters();
@@ -47,7 +47,7 @@ class PhpactorHandlerLoader implements HandlerLoader
             $container->getParameter(
                 PhpactorContainer::PARAM_EXTENSION_CLASSES
             ),
-            $parameters
+            array_merge($parameters, $config)
         );
 
         return $container;
