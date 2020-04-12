@@ -3,7 +3,6 @@
 namespace Phpactor\Extension\LanguageServerReferenceFinder\Handler;
 
 use Amp\Promise;
-use Generator;
 use LanguageServerProtocol\Location;
 use LanguageServerProtocol\Position;
 use LanguageServerProtocol\Range;
@@ -83,7 +82,7 @@ class GotoDefinitionHandler implements Handler, CanRegisterCapabilities
         });
     }
 
-    public function registerCapabiltiies(ServerCapabilities $capabilities)
+    public function registerCapabiltiies(ServerCapabilities $capabilities): void
     {
         $capabilities->definitionProvider = true;
     }

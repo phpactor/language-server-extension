@@ -81,7 +81,7 @@ class HoverHandler implements Handler, CanRegisterCapabilities
         });
     }
 
-    public function registerCapabiltiies(ServerCapabilities $capabilities)
+    public function registerCapabiltiies(ServerCapabilities $capabilities): void
     {
         $capabilities->hoverProvider = true;
     }
@@ -114,7 +114,7 @@ class HoverHandler implements Handler, CanRegisterCapabilities
         return null;
     }
 
-    private function renderMember(SymbolContext $symbolContext): ?string
+    private function renderMember(SymbolContext $symbolContext): string
     {
         $name = $symbolContext->symbol()->name();
         $container = $symbolContext->containerType();
@@ -148,7 +148,7 @@ class HoverHandler implements Handler, CanRegisterCapabilities
         }
     }
 
-    private function renderFunction(SymbolContext $symbolContext)
+    private function renderFunction(SymbolContext $symbolContext): string
     {
         $name = $symbolContext->symbol()->name();
         $function = $this->reflector->reflectFunction($name);
@@ -156,12 +156,12 @@ class HoverHandler implements Handler, CanRegisterCapabilities
         return $this->formatter->format($function);
     }
 
-    private function renderVariable(SymbolContext $symbolContext)
+    private function renderVariable(SymbolContext $symbolContext): string
     {
         return $this->formatter->format($symbolContext->types());
     }
 
-    private function renderClass(Type $type)
+    private function renderClass(Type $type): string
     {
         try {
             $class = $this->reflector->reflectClassLike((string) $type);

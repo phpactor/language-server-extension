@@ -7,7 +7,6 @@ use LanguageServerProtocol\Position;
 use LanguageServerProtocol\TextDocumentIdentifier;
 use LanguageServerProtocol\TextDocumentItem;
 use Phpactor\Extension\LanguageServerReferenceFinder\Handler\GotoDefinitionHandler;
-use Phpactor\LanguageServer\Core\Rpc\ResponseMessage;
 use Phpactor\LanguageServer\Core\Session\Workspace;
 use Phpactor\LanguageServer\Test\HandlerTester;
 use Phpactor\ReferenceFinder\DefinitionLocation;

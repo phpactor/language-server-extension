@@ -2,6 +2,10 @@ parameters:
     level: 7
     inferPrivatePropertyTypeFromConstructor: true
     checkMissingIterableValueType: false
+    ignoreErrors:
+        - '{return type with generic interface .*Promise does}'
+        - '{Unable to resolve the template type TReturn in call to function}'
+        - '{Access to an undefined.*typeDefinitionProvider}'
         
     paths:
         - lib

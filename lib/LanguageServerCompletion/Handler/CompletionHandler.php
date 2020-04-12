@@ -114,7 +114,7 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
         });
     }
 
-    public function registerCapabiltiies(ServerCapabilities $capabilities)
+    public function registerCapabiltiies(ServerCapabilities $capabilities): void
     {
         $capabilities->completionProvider = new CompletionOptions(false, [':', '>', '$']);
         $capabilities->signatureHelpProvider = new SignatureHelpOptions(['(', ',']);
