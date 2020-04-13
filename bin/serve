@@ -11,6 +11,7 @@ use Phpactor\Extension\Completion\CompletionExtension;
 use Phpactor\Extension\ComposerAutoloader\ComposerAutoloaderExtension;
 use Phpactor\Extension\Console\ConsoleExtension;
 use Phpactor\Extension\LanguageServerCompletion\LanguageServerCompletionExtension;
+use Phpactor\Extension\LanguageServerIndexer\LanguageServerIndexerExtension;
 use Phpactor\Extension\LanguageServerReferenceFinder\LanguageServerReferenceFinderExtension;
 use Phpactor\Extension\LanguageServerWorseReflection\LanguageServerWorseReflectionExtension;
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
@@ -18,6 +19,7 @@ use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\ReferenceFinder\ReferenceFinderExtension;
 use Phpactor\Extension\WorseReflection\WorseReflectionExtension;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
+use Phpactor\Indexer\Extension\IndexerExtension;
 use Symfony\Component\Console\Application;
 
 $container = PhpactorContainer::fromExtensions([
@@ -28,11 +30,13 @@ $container = PhpactorContainer::fromExtensions([
     LanguageServerCompletionExtension::class,
     LanguageServerReferenceFinderExtension::class,
     LanguageServerWorseReflectionExtension::class,
+    LanguageServerIndexerExtension::class,
     CompletionExtension::class,
     WorseReflectionExtension::class,
     ClassToFileExtension::class,
     ComposerAutoloaderExtension::class,
     ReferenceFinderExtension::class,
+    IndexerExtension::class,
 ], [
     FilePathResolverExtension::PARAM_PROJECT_ROOT => __DIR__,
     FilePathResolverExtension::PARAM_APPLICATION_ROOT => __DIR__ .'/..',

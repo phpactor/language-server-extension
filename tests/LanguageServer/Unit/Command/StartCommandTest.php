@@ -29,9 +29,10 @@ class StartCommandTest extends LanguageServerTestCase
 
     public function testDebugOptions()
     {
-        $this->tester->execute([
+        $exitCode = $this->tester->execute([
             '--throw' => true,
             '--no-loop' => true,
         ]);
+        self::assertEquals(0, $exitCode);
     }
 }
