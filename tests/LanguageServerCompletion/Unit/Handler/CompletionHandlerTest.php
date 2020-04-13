@@ -14,7 +14,6 @@ use PHPUnit\Framework\TestCase;
 use Phpactor\Completion\Core\Completor;
 use Phpactor\Completion\Core\Range as PhpactorRange;
 use Phpactor\Completion\Core\Suggestion;
-use Phpactor\Completion\Core\TypedCompletor;
 use Phpactor\Completion\Core\TypedCompletorRegistry;
 use Phpactor\Extension\LanguageServerCompletion\Handler\CompletionHandler;
 use Phpactor\Extension\LanguageServerCompletion\Util\SuggestionNameFormatter;
@@ -130,7 +129,7 @@ class CompletionHandlerTest extends TestCase
     {
         $completor = $this->createCompletor($suggestions);
         $registry = new TypedCompletorRegistry([
-            new TypedCompletor($completor, [ 'php' ])
+            'php' => $completor,
         ]);
         return new HandlerTester(new CompletionHandler(
             $this->workspace,
