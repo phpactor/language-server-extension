@@ -67,10 +67,22 @@ class IndexerHandler implements ServiceProvider
     {
         return \Amp\call(function () use ($transmitter) {
             $job = $this->indexer->getJob();
-            $this->showMessage($transmitter, sprintf('Indexing "%s" PHP files', $job->size()));
+            $size = $job->size();
+            $this->showMessage($transmitter, sprintf('Indexing "%s" PHP files', $size));
 
             $index = 0;
             foreach ($job->generator() as $file) {
+                $index++;
+
+                if ($index % 500 === 0) {
+                    $this->showMessage($transmitter, sprintf(
+                        'Indexed %s/%s (%s%%)',
+                        $index,
+                        $size,
+                        number_format($index / $size * 100, 2)
+                    ));
+                }
+
                 yield new Delayed(1);
             }
 

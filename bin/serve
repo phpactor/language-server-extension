@@ -40,9 +40,9 @@ $container = PhpactorContainer::fromExtensions([
     IndexerExtension::class,
     SourceCodeFilesystemExtension::class,
 ], [
-    FilePathResolverExtension::PARAM_PROJECT_ROOT => __DIR__ . '/..',
-    FilePathResolverExtension::PARAM_APPLICATION_ROOT => __DIR__ .'/..',
-    IndexerExtension::PARAM_INDEX_PATH => __DIR__ . '/../cache',
+    FilePathResolverExtension::PARAM_PROJECT_ROOT => realpath(__DIR__ . '/..'),
+    FilePathResolverExtension::PARAM_APPLICATION_ROOT => realpath(__DIR__ .'/..'),
+    IndexerExtension::PARAM_INDEX_PATH => realpath(__DIR__ . '/..') . '/cache',
 ]);
 
 $container->get(LoggingExtension::SERVICE_LOGGER)->pushHandler(new StreamHandler(STDERR));
