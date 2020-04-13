@@ -7,10 +7,10 @@ use Phpactor\Container\Container;
 use Phpactor\Container\ContainerBuilder;
 use Phpactor\Container\Extension;
 use Phpactor\Extension\LanguageServerIndexer\Handler\IndexerHandler;
-use Phpactor\Extension\WorseReflection\WorseReflectionExtension;
+use Phpactor\Extension\LanguageServer\LanguageServerExtension;
+use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Indexer\Model\Indexer;
 use Phpactor\MapResolver\Resolver;
-use Psr\Log\LoggerInterface;
 
 class LanguageServerIndexerExtension implements Extension
 {
@@ -19,23 +19,21 @@ class LanguageServerIndexerExtension implements Extension
      */
     public function load(ContainerBuilder $container)
     {
-        $this->registerSourceLocator($container);
+        $this->registerSessionHandler($container);
     }
 
     public function configure(Resolver $schema)
     {
     }
 
-    private function registerSourceLocator(ContainerBuilder $container): void
+    private function registerSessionHandler(ContainerBuilder $container): void
     {
         $container->register(IndexerHandler::class, function (Container $container) {
             return new IndexerHandler(
                 $container->get(Indexer::class),
                 $container->get(Watcher::class),
-                $container->get(LoggerInterface::class)
+                $container->get(LoggingExtension::SERVICE_LOGGER)
             );
-        }, [ WorseReflectionExtension::TAG_SOURCE_LOCATOR => [
-            'priority' => 255,
-        ]]);
+        }, [ LanguageServerExtension::TAG_SESSION_HANDLER => []]);
     }
 }

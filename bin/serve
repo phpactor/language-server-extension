@@ -17,6 +17,7 @@ use Phpactor\Extension\LanguageServerWorseReflection\LanguageServerWorseReflecti
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\ReferenceFinder\ReferenceFinderExtension;
+use Phpactor\Extension\SourceCodeFilesystem\SourceCodeFilesystemExtension;
 use Phpactor\Extension\WorseReflection\WorseReflectionExtension;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
 use Phpactor\Indexer\Extension\IndexerExtension;
@@ -37,9 +38,11 @@ $container = PhpactorContainer::fromExtensions([
     ComposerAutoloaderExtension::class,
     ReferenceFinderExtension::class,
     IndexerExtension::class,
+    SourceCodeFilesystemExtension::class,
 ], [
-    FilePathResolverExtension::PARAM_PROJECT_ROOT => __DIR__,
+    FilePathResolverExtension::PARAM_PROJECT_ROOT => __DIR__ . '/..',
     FilePathResolverExtension::PARAM_APPLICATION_ROOT => __DIR__ .'/..',
+    IndexerExtension::PARAM_INDEX_PATH => __DIR__ . '/../cache',
 ]);
 
 $container->get(LoggingExtension::SERVICE_LOGGER)->pushHandler(new StreamHandler(STDERR));
