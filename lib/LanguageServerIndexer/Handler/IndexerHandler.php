@@ -56,14 +56,14 @@ class IndexerHandler implements ServiceProvider
     public function services(): array
     {
         return [
-            'indexerService'
+            'indexer'
         ];
     }
 
     /**
      * @return Promise<mixed>
      */
-    public function indexerService(MessageTransmitter $transmitter): Promise
+    public function indexer(MessageTransmitter $transmitter): Promise
     {
         return \Amp\call(function () use ($transmitter) {
             $job = $this->indexer->getJob();

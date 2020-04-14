@@ -37,7 +37,7 @@ EOT
                 new ModifiedFile($this->workspace()->path('Foobar.php'), ModifiedFile::TYPE_FILE),
             ]));
             $handler = new IndexerHandler($indexer, $watcher, $this->logger->reveal());
-            yield $handler->indexerService(new NullMessageTransmitter());
+            yield $handler->indexer(new NullMessageTransmitter());
         }));
 
         $this->logger->debug(sprintf(
