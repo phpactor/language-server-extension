@@ -15,13 +15,12 @@ class LanguageServerFormatter implements FormatterInterface
         $message = sprintf(
             '[%s][%s] %s',
             $this->color($record['level_name']) . substr($record['level_name'], 0, 4)."\e[0;0m",
-            "\e[1;37m".substr($record['datetime']->format('U.u'),4)."\e[0;0m",
+            "\e[1;37m".substr($record['datetime']->format('U.u'), 4)."\e[0;0m",
             $record['message']
         );
 
         $json = json_encode($record['context'], JSON_PRETTY_PRINT);
         return $message.$json."\n";
-
     }
 
     /**

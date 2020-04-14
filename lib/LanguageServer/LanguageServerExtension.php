@@ -91,7 +91,7 @@ class LanguageServerExtension implements Extension
         }, [ self::TAG_SESSION_HANDLER => []]);
     }
 
-    private function registerLogging(ContainerBuilder $container)
+    private function registerLogging(ContainerBuilder $container): void
     {
         $container->register(LanguageServerFormatter::class, function () {
             return new LanguageServerFormatter();
