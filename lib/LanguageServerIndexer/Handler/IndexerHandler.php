@@ -2,6 +2,8 @@
 
 namespace Phpactor\Extension\LanguageServerIndexer\Handler;
 
+use Amp\CancellationToken;
+use Amp\CancelledException;
 use Amp\Delayed;
 use Amp\Promise;
 use Amp\Success;
@@ -63,9 +65,9 @@ class IndexerHandler implements ServiceProvider
     /**
      * @return Promise<mixed>
      */
-    public function indexer(MessageTransmitter $transmitter): Promise
+    public function indexer(MessageTransmitter $transmitter, CancellationToken $cancel): Promise
     {
-        return \Amp\call(function () use ($transmitter) {
+        return \Amp\call(function () use ($transmitter, $cancel) {
             $job = $this->indexer->getJob();
             $size = $job->size();
             $this->showMessage($transmitter, sprintf('Indexing "%s" PHP files', $size));
@@ -83,6 +85,12 @@ class IndexerHandler implements ServiceProvider
                     ));
                 }
 
+                try {
+                    $cancel->throwIfRequested();
+                } catch (CancelledException $cancelled) {
+                    break;
+                }
+
                 yield new Delayed(1);
             }
 
@@ -91,6 +99,11 @@ class IndexerHandler implements ServiceProvider
             $process = yield $this->watcher->watch();
 
             while (null !== $file = yield $process->wait()) {
+                try {
+                    $cancel->throwIfRequested();
+                } catch (CancelledException $cancelled) {
+                    break;
+                }
                 assert($file instanceof ModifiedFile);
                 $job = $this->indexer->getJob($file->path());
 

@@ -2,6 +2,7 @@
 
 namespace Phpactor\Extension\LanguageServerIndexer\Tests\Unit;
 
+use Amp\CancellationTokenSource;
 use Phpactor\AmpFsWatch\ModifiedFile;
 use Phpactor\AmpFsWatch\ModifiedFileQueue;
 use Phpactor\AmpFsWatch\Watcher\TestWatcher\TestWatcher;
@@ -37,7 +38,8 @@ EOT
                 new ModifiedFile($this->workspace()->path('Foobar.php'), ModifiedFile::TYPE_FILE),
             ]));
             $handler = new IndexerHandler($indexer, $watcher, $this->logger->reveal());
-            yield $handler->indexer(new NullMessageTransmitter());
+            $token = (new CancellationTokenSource())->getToken();
+            yield $handler->indexer(new NullMessageTransmitter(), $token);
         }));
 
         $this->logger->debug(sprintf(
