@@ -7,7 +7,6 @@ use Phpactor\Container\ContainerBuilder;
 use Phpactor\Container\Extension;
 use Phpactor\Extension\LanguageServer\Handler\PhpactorHandlerLoader;
 use Phpactor\Extension\LanguageServer\Handler\SessionHandler;
-use Phpactor\Extension\LanguageServer\Logger\LanguageServerFormatter;
 use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\Console\ConsoleExtension;
 use Phpactor\Extension\LanguageServer\Command\StartCommand;
@@ -44,7 +43,6 @@ class LanguageServerExtension implements Extension
         $this->registerServer($container);
         $this->registerCommand($container);
         $this->registerSession($container);
-        $this->registerLogging($container);
     }
 
     private function registerServer(ContainerBuilder $container): void
@@ -89,16 +87,5 @@ class LanguageServerExtension implements Extension
         $container->register('language_server.session.handler.session', function (Container $container) {
             return new SessionHandler($container);
         }, [ self::TAG_SESSION_HANDLER => []]);
-    }
-
-    private function registerLogging(ContainerBuilder $container): void
-    {
-        $container->register(LanguageServerFormatter::class, function () {
-            return new LanguageServerFormatter();
-        }, [
-            LoggingExtension::TAG_FORMATTER => [
-                'alias' => 'lsp',
-            ],
-        ]);
     }
 }
