@@ -189,6 +189,6 @@ class HoverHandler implements Handler, CanRegisterCapabilities
             return $info;
         }
 
-        return $info . "\n\n" . $documentation;
+        return $info . "\n" . str_repeat('-', mb_strlen($info)) . "\n\n" . $documentation;
     }
 }

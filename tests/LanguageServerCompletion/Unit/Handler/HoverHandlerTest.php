@@ -65,6 +65,7 @@ EOT
             ,
                 <<<'EOT'
 pri foo(): string
+-----------------
 
 This is a method
 EOT
