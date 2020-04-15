@@ -51,6 +51,25 @@ class HoverHandlerTest extends IntegrationTestCase
             'pri foo(): string'
         ];
 
+        yield 'method with documentation' => [
+            <<<'EOT'
+<?php 
+
+class A { 
+    /** 
+     * This is a method 
+     */
+    private function f<>oo():string {} 
+}
+EOT
+            ,
+                <<<'EOT'
+This is a method
+
+pri foo(): string
+EOT
+        ];
+
         yield 'class' => [
             '<?php cl<>ass A { } }',
             'A'

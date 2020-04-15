@@ -15,6 +15,7 @@ use Phpactor\LanguageServer\Core\Handler\CanRegisterCapabilities;
 use Phpactor\LanguageServer\Core\Handler\Handler;
 use Phpactor\LanguageServer\Core\Session\Workspace;
 use Phpactor\TextDocument\TextDocumentBuilder;
+use Phpactor\WorseReflection\Core\DocBlock\DocBlock;
 use Phpactor\WorseReflection\Core\Exception\NotFound;
 use Phpactor\WorseReflection\Core\Inference\Symbol;
 use Phpactor\WorseReflection\Core\Inference\SymbolContext;
@@ -67,12 +68,7 @@ class HoverHandler implements Handler, CanRegisterCapabilities
             $offsetReflection = $this->reflector->reflectOffset($document, $offset);
 
             $symbolContext = $offsetReflection->symbolContext();
-            $info = $this->messageFromSymbolContext($symbolContext);
-            $info = $info ?: sprintf(
-                '%s %s',
-                $symbolContext->symbol()->symbolType(),
-                $symbolContext->symbol()->name()
-            );
+            $info = $this->resolveInfo($symbolContext);
 
             return new Hover($info, new Range(
                 OffsetHelper::offsetToPosition($document->__toString(), $symbolContext->symbol()->position()->start()),
@@ -142,7 +138,7 @@ class HoverHandler implements Handler, CanRegisterCapabilities
                     return sprintf('Unknown symbol type "%s"', $symbolType);
             }
 
-            return $this->formatter->format($member);
+            return $this->prependDocumentation($member->docblock(), $this->formatter->format($member));
         } catch (NotFound $e) {
             return $e->getMessage();
         }
@@ -153,7 +149,7 @@ class HoverHandler implements Handler, CanRegisterCapabilities
         $name = $symbolContext->symbol()->name();
         $function = $this->reflector->reflectFunction($name);
 
-        return $this->formatter->format($function);
+        return $this->prependDocumentation($function->docblock(), $this->formatter->format($function));
     }
 
     private function renderVariable(SymbolContext $symbolContext): string
@@ -165,9 +161,34 @@ class HoverHandler implements Handler, CanRegisterCapabilities
     {
         try {
             $class = $this->reflector->reflectClassLike((string) $type);
-            return $this->formatter->format($class);
+            return $this->prependDocumentation($class->docblock(), $this->formatter->format($class));
         } catch (NotFound $e) {
             return $e->getMessage();
         }
+    }
+
+    private function resolveInfo(SymbolContext $symbolContext): string
+    {
+        $info = $this->messageFromSymbolContext($symbolContext);
+        $info = $info ?: sprintf(
+            '%s %s',
+            $symbolContext->symbol()->symbolType(),
+            $symbolContext->symbol()->name()
+        );
+        return $info;
+    }
+
+    private function prependDocumentation(DocBlock $docBlock, string $info): string
+    {
+        if (!$docBlock->isDefined()) {
+            return $info;
+        }
+
+        $documentation = trim($docBlock->formatted());
+        if (empty($documentation)) {
+            return $info;
+        }
+
+        return $documentation . "\n\n" . $info;
     }
 }
