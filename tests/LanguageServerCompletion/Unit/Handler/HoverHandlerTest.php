@@ -64,9 +64,9 @@ class A {
 EOT
             ,
                 <<<'EOT'
-This is a method
-
 pri foo(): string
+
+This is a method
 EOT
         ];
 
