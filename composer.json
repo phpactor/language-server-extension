@@ -26,7 +26,8 @@
         "phpactor/completion-worse-extension": "^0.2.0",
         "phpactor/reference-finder-extension": "~0.1.4",
         "phpactor/code-transform": "^0.2.1",
-        "phpactor/indexer-extension": "^0.1.4"
+        "phpactor/indexer-extension": "^0.1.4",
+        "phly/phly-event-dispatcher": "^1.0"
     },
     "require-dev": {
         "phpspec/prophecy-phpunit": "^2.0",
