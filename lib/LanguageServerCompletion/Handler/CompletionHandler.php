@@ -19,6 +19,7 @@ use Phpactor\Completion\Core\Completor;
 use Phpactor\Completion\Core\Suggestion;
 use Phpactor\Completion\Core\TypedCompletorRegistry;
 use Phpactor\Extension\LanguageServerCompletion\Util\PhpactorToLspCompletionType;
+use Phpactor\Extension\LanguageServerCompletion\Util\SuggestionInsertTextFactory;
 use Phpactor\Extension\LanguageServerCompletion\Util\SuggestionNameFormatter;
 use Phpactor\Extension\LanguageServer\Helper\OffsetHelper;
 use Phpactor\LanguageServer\Core\Handler\CanRegisterCapabilities;
@@ -50,6 +51,11 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
     private $suggestionNameFormatter;
 
     /**
+     * @var SuggestionInsertTextFactory
+     */
+    private $insertTextFactory;
+
+    /**
      * @var Workspace
      */
     private $workspace;
@@ -58,11 +64,13 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
         Workspace $workspace,
         TypedCompletorRegistry $registry,
         SuggestionNameFormatter $suggestionNameFormatter,
+        SuggestionInsertTextFactory $insertTextFactory,
         bool $provideTextEdit = false
     ) {
         $this->registry = $registry;
         $this->provideTextEdit = $provideTextEdit;
         $this->workspace = $workspace;
+        $this->insertTextFactory = $insertTextFactory;
         $this->suggestionNameFormatter = $suggestionNameFormatter;
     }
 
@@ -90,7 +98,8 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
             $completionList->isIncomplete = true;
 
             foreach ($suggestions as $suggestion) {
-                /** @var Suggestion $suggestion */
+                $insertText = $this->insertTextFactory->createFrom($suggestion);
+
                 $completionList->items[] = new CompletionItem(
                     $this->suggestionNameFormatter->format($suggestion),
                     PhpactorToLspCompletionType::fromPhpactorType($suggestion->type()),
@@ -98,8 +107,12 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
                     $suggestion->documentation(),
                     null,
                     null,
+                    $insertText->value(),
+                    $this->textEdit($suggestion, $textDocument),
                     null,
-                    $this->textEdit($suggestion, $textDocument)
+                    null,
+                    null,
+                    $insertText->type()
                 );
 
                 try {
