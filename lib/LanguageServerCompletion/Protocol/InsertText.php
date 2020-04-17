@@ -57,7 +57,7 @@ final class InsertText
             return null;
         }
 
-        return \preg_match('/\${\d+(?::[^}]+)?}/', $value)
+        return \preg_match('/(?<!\\\)\$(?:(?:{\d+(?::[^}]+)?})|(?:\d+))/', $value)
             ? InsertTextFormat::SNIPPET
             : InsertTextFormat::PLAIN_TEXT
         ;
