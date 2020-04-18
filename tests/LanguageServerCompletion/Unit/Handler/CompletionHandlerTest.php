@@ -16,14 +16,11 @@ use Phpactor\Completion\Core\Range as PhpactorRange;
 use Phpactor\Completion\Core\Suggestion;
 use Phpactor\Completion\Core\TypedCompletorRegistry;
 use Phpactor\Extension\LanguageServerCompletion\Handler\CompletionHandler;
-use Phpactor\Extension\LanguageServerCompletion\Protocol\InsertText;
-use Phpactor\Extension\LanguageServerCompletion\Util\SuggestionInsertTextFactory;
 use Phpactor\Extension\LanguageServerCompletion\Util\SuggestionNameFormatter;
 use Phpactor\LanguageServer\Core\Session\Workspace;
 use Phpactor\LanguageServer\Test\HandlerTester;
 use Phpactor\TextDocument\ByteOffset;
 use Phpactor\TextDocument\TextDocument;
-use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 
 class CompletionHandlerTest extends TestCase
@@ -80,8 +77,8 @@ class CompletionHandlerTest extends TestCase
         );
         $this->assertInstanceOf(CompletionList::class, $response->result);
         $this->assertEquals([
-            new CompletionItem('hello'),
-            new CompletionItem('goodbye'),
+            new CompletionItem('hello', null, null, null, null, null, 'hello', null, null, null, null, 1),
+            new CompletionItem('goodbye', null, null, null, null, null, 'goodbye', null, null, null, null, 1),
         ], $response->result->items);
     }
 
@@ -98,10 +95,10 @@ class CompletionHandlerTest extends TestCase
             ]
         );
         $this->assertEquals([
-            new CompletionItem('hello', null, '', null, null, null, null, new TextEdit(
+            new CompletionItem('hello', null, '', null, null, null, 'hello', new TextEdit(
                 new Range(new Position(0, 1), new Position(0, 2)),
                 'hello'
-            )),
+            ), null, null, null, 1),
         ], $response->result->items);
     }
 
@@ -132,14 +129,15 @@ class CompletionHandlerTest extends TestCase
 
     public function testHandleSuggestionsWithSnippets()
     {
-        $helloInsertText = InsertText::snippet('hello()');
-        $goodbyeInsertText = InsertText::plainText('goodbye()');
         $tester = $this->create([
-            Suggestion::createWithOptions('hello', [ 'type' => Suggestion::TYPE_METHOD]),
-            Suggestion::createWithOptions('goodbye', [ 'type' => Suggestion::TYPE_METHOD]),
-        ], [
-            'hello' => $helloInsertText,
-            'goodbye' => $goodbyeInsertText,
+            Suggestion::createWithOptions('hello', [
+                'type' => Suggestion::TYPE_METHOD,
+                'label' => 'hello'
+            ]),
+            Suggestion::createWithOptions('goodbye', [
+                'type' => Suggestion::TYPE_METHOD,
+                'snippet' => 'goodbye()',
+            ]),
         ]);
         $response = $tester->dispatchAndWait(
             'textDocument/completion',
@@ -149,12 +147,12 @@ class CompletionHandlerTest extends TestCase
             ]
         );
         $this->assertEquals([
-            new CompletionItem('hello', 2, '', '', null, null, $helloInsertText->value(), null, null, null, null, $helloInsertText->type()),
-            new CompletionItem('goodbye', 2, '', '', null, null, $goodbyeInsertText->value(), null, null, null, null, $goodbyeInsertText->type()),
+            new CompletionItem('hello', 2, '', '', null, null, 'hello', null, null, null, null, 1),
+            new CompletionItem('goodbye', 2, '', '', null, null, 'goodbye()', null, null, null, null, 2),
         ], $response->result->items);
     }
 
-    private function create(array $suggestions, array $insertTexts = []): HandlerTester
+    private function create(array $suggestions): HandlerTester
     {
         $completor = $this->createCompletor($suggestions);
         $registry = new TypedCompletorRegistry([
@@ -164,7 +162,6 @@ class CompletionHandlerTest extends TestCase
             $this->workspace,
             $registry,
             new SuggestionNameFormatter(),
-            $this->createInsertTextFactory($suggestions, $insertTexts),
             true
         ));
     }
@@ -188,30 +185,5 @@ class CompletionHandlerTest extends TestCase
                 }
             }
         };
-    }
-
-    /**
-     * @param Suggestion[] $suggestions
-     * @param InsertText[] $insertTexts
-     */
-    private function createInsertTextFactory(array $suggestions, array $insertTexts): SuggestionInsertTextFactory
-    {
-        $insertTextFactory = $this->prophesize(SuggestionInsertTextFactory::class);
-        $suggestionsByName = [];
-        foreach ($suggestions as $suggestion) {
-            $suggestionsByName[$suggestion->name()] = $suggestion;
-        }
-
-        $insertTextFactory->createFrom(Argument::type(Suggestion::class))
-            ->willReturn(new InsertText(null))
-        ;
-
-        foreach ($insertTexts as $name => $insertTExt) {
-            $insertTextFactory->createFrom($suggestionsByName[$name])
-                ->willReturn($insertTExt)
-            ;
-        }
-
-        return $insertTextFactory->reveal();
     }
 }

@@ -9,6 +9,7 @@ use Amp\Promise;
 use LanguageServerProtocol\CompletionItem;
 use LanguageServerProtocol\CompletionList;
 use LanguageServerProtocol\CompletionOptions;
+use LanguageServerProtocol\InsertTextFormat;
 use LanguageServerProtocol\Position;
 use LanguageServerProtocol\Range;
 use LanguageServerProtocol\ServerCapabilities;
@@ -19,7 +20,6 @@ use Phpactor\Completion\Core\Completor;
 use Phpactor\Completion\Core\Suggestion;
 use Phpactor\Completion\Core\TypedCompletorRegistry;
 use Phpactor\Extension\LanguageServerCompletion\Util\PhpactorToLspCompletionType;
-use Phpactor\Extension\LanguageServerCompletion\Util\SuggestionInsertTextFactory;
 use Phpactor\Extension\LanguageServerCompletion\Util\SuggestionNameFormatter;
 use Phpactor\Extension\LanguageServer\Helper\OffsetHelper;
 use Phpactor\LanguageServer\Core\Handler\CanRegisterCapabilities;
@@ -51,11 +51,6 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
     private $suggestionNameFormatter;
 
     /**
-     * @var SuggestionInsertTextFactory
-     */
-    private $insertTextFactory;
-
-    /**
      * @var Workspace
      */
     private $workspace;
@@ -64,13 +59,11 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
         Workspace $workspace,
         TypedCompletorRegistry $registry,
         SuggestionNameFormatter $suggestionNameFormatter,
-        SuggestionInsertTextFactory $insertTextFactory,
         bool $provideTextEdit = false
     ) {
         $this->registry = $registry;
         $this->provideTextEdit = $provideTextEdit;
         $this->workspace = $workspace;
-        $this->insertTextFactory = $insertTextFactory;
         $this->suggestionNameFormatter = $suggestionNameFormatter;
     }
 
@@ -98,21 +91,22 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
             $completionList->isIncomplete = true;
 
             foreach ($suggestions as $suggestion) {
-                $insertText = $this->insertTextFactory->createFrom($suggestion);
+                $insertText = $suggestion->snippet() ?: $suggestion->name();
+                $insertTextFormat = $suggestion->snippet() ? InsertTextFormat::SNIPPET : InsertTextFormat::PLAIN_TEXT;
 
                 $completionList->items[] = new CompletionItem(
-                    $this->suggestionNameFormatter->format($suggestion),
+                    $this->suggestionNameFormatter->format($suggestion), // TODO Should use $suggestion->label() ?
                     PhpactorToLspCompletionType::fromPhpactorType($suggestion->type()),
                     $suggestion->shortDescription(),
                     $suggestion->documentation(),
                     null,
                     null,
-                    $insertText->value(),
+                    $insertText,
                     $this->textEdit($suggestion, $textDocument),
                     null,
                     null,
                     null,
-                    $insertText->type()
+                    $insertTextFormat
                 );
 
                 try {
