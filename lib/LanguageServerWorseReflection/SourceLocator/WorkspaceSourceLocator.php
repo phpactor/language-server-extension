@@ -3,6 +3,7 @@
 namespace Phpactor\Extension\LanguageServerWorseReflection\SourceLocator;
 
 use LanguageServerProtocol\TextDocumentItem;
+use Phpactor\Extension\LanguageServerWorseReflection\Workspace\WorkspaceIndex;
 use Phpactor\LanguageServer\Core\Session\Workspace;
 use Phpactor\TextDocument\TextDocumentBuilder;
 use Phpactor\WorseReflection\Core\Exception\SourceNotFound;
@@ -14,19 +15,13 @@ use Phpactor\WorseReflection\Core\SourceCodeLocator;
 class WorkspaceSourceLocator implements SourceCodeLocator
 {
     /**
-     * @var Workspace
+     * @var WorkspaceIndex
      */
-    private $workspace;
+    private $index;
 
-    /**
-     * @var SourceCodeReflector
-     */
-    private $reflector;
-
-    public function __construct(Workspace $workspace, SourceCodeReflector $reflector)
+    public function __construct(WorkspaceIndex $index)
     {
-        $this->workspace = $workspace;
-        $this->reflector = $reflector;
+        $this->index = $index;
     }
 
     /**
@@ -34,29 +29,13 @@ class WorkspaceSourceLocator implements SourceCodeLocator
      */
     public function locate(Name $name): SourceCode
     {
-        foreach ($this->workspace as $textDocument) {
-            assert($textDocument instanceof TextDocumentItem);
-
-            $textDocument = TextDocumentBuilder::create(
-                $textDocument->text
-            )->uri(
-                $textDocument->uri
-            )->language(
-                $textDocument->languageId
-            )->build();
-
-            $classes = $this->reflector->reflectClassesIn($textDocument);
-
-            if (false === $classes->has((string) $name)) {
-                continue;
-            }
-
-            return SourceCode::fromUnknown($textDocument);
+        if (null === $document = $this->index->documentForName($name)) {
+            throw new SourceNotFound(sprintf(
+                'Class "%s" not found',
+                (string) $name
+            ));
         }
 
-        throw new SourceNotFound(sprintf(
-            'Class "%s" not found',
-            (string) $name
-        ));
+        return SourceCode::fromUnknown($document);
     }
 }
