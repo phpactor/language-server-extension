@@ -47,7 +47,8 @@
             "Phpactor\\Extension\\LanguageServer\\Tests\\": "tests/LanguageServer/",
             "Phpactor\\Extension\\LanguageServerCompletion\\Tests\\": "tests/LanguageServerCompletion/",
             "Phpactor\\Extension\\LanguageServerReferenceFinder\\Tests\\": "tests/LanguageServerReferenceFinder/",
-            "Phpactor\\Extension\\LanguageServerIndexer\\Tests\\": "tests/LanguageServerIndexer/"
+            "Phpactor\\Extension\\LanguageServerIndexer\\Tests\\": "tests/LanguageServerIndexer/",
+            "Phpactor\\Extension\\LanguageServerWorseReflection\\Tests\\": "tests/LanguageServerWorseReflection/"
         }
     },
     "scripts": {

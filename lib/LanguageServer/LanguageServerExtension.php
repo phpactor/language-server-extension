@@ -102,7 +102,6 @@ class LanguageServerExtension implements Extension
     private function registerEventDispatcher(ContainerBuilder $container): void
     {
         $container->register(EventDispatcherInterface::class, function (Container $container) {
-
             $aggregate = new ListenerProviderAggregate();
             foreach (array_keys($container->getServiceIdsForTag(self::TAG_LISTENER_PROVIDER)) as $serviceId) {
                 $aggregate->attach($container->get($serviceId));

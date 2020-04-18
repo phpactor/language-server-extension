@@ -6,7 +6,6 @@ use Phpactor\TextDocument\TextDocument;
 use Phpactor\TextDocument\TextDocumentBuilder;
 use Phpactor\TextDocument\TextDocumentUri;
 use Phpactor\WorseReflection\Core\Name;
-use Phpactor\WorseReflection\Core\Reflection\ReflectionClass;
 use Phpactor\WorseReflection\Core\Reflector\SourceCodeReflector;
 use RuntimeException;
 
@@ -20,7 +19,7 @@ class WorkspaceIndex
     /**
      * @var array<string, TextDocument>
      */
-    private $byClass = [];
+    private $byName = [];
 
     /**
      * @var array<string, TextDocument>
@@ -32,10 +31,10 @@ class WorkspaceIndex
         $this->reflector = $reflector;
     }
 
-    public function documentForClass(Name $name): ?TextDocument
+    public function documentForName(Name $name): ?TextDocument
     {
-        if (isset($this->byClass[$name->full()])) {
-            return $this->byClass[$name->full()];
+        if (isset($this->byName[$name->full()])) {
+            return $this->byName[$name->full()];
         }
 
         return null;
@@ -44,18 +43,22 @@ class WorkspaceIndex
     public function index(TextDocument $textDocument): void
     {
         foreach ($this->reflector->reflectClassesIn($textDocument) as $reflectionClass) {
-            $this->byClass[$reflectionClass->name()->full()] = $textDocument;
+            $this->byName[$reflectionClass->name()->full()] = $textDocument;
+        }
+
+        foreach ($this->reflector->reflectFunctionsIn($textDocument) as $reflectionFunction) {
+            $this->byName[$reflectionFunction->name()->full()] = $textDocument;
         }
     }
 
     public function update(TextDocumentUri $textDocumentUri, string $updatedText): void
     {
-        foreach ($this->byClass as $className => $textDocument) {
+        foreach ($this->byName as $className => $textDocument) {
             if ($textDocumentUri != $textDocument->uri()) {
                 continue;
             }
 
-            $this->byClass[$className] = TextDocumentBuilder::fromTextDocument($textDocument)->text($updatedText)->build();
+            $this->byName[$className] = TextDocumentBuilder::fromTextDocument($textDocument)->text($updatedText)->build();
             return;
         }
 
@@ -67,12 +70,12 @@ class WorkspaceIndex
 
     public function remove(TextDocumentUri $textDocumentUri): void
     {
-        foreach ($this->byClass as $className => $textDocument) {
+        foreach ($this->byName as $className => $textDocument) {
             if ($textDocumentUri != $textDocument->uri()) {
                 continue;
             }
 
-            unset($this->byClass[$className]);
+            unset($this->byName[$className]);
             return;
         }
 

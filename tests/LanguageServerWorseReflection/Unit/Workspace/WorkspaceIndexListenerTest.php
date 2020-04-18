@@ -14,7 +14,6 @@ use Phpactor\LanguageServer\Event\TextDocumentOpened;
 use Phpactor\LanguageServer\Event\TextDocumentUpdated;
 use Phpactor\TextDocument\TextDocumentBuilder;
 use Phpactor\TextDocument\TextDocumentUri;
-use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 
 class WorkspaceIndexListenerTest extends TestCase
