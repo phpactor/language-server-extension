@@ -5,8 +5,6 @@ namespace Phpactor\Extension\LanguageServerWorseReflection\Tests\Unit\Workspace;
 use PHPUnit\Framework\TestCase;
 use Phpactor\Extension\LanguageServerWorseReflection\SourceLocator\WorkspaceSourceLocator;
 use Phpactor\Extension\LanguageServerWorseReflection\Workspace\WorkspaceIndex;
-use Phpactor\TextDocument\StandardTextDocument;
-use Phpactor\TextDocument\TextDocument;
 use Phpactor\TextDocument\TextDocumentBuilder;
 use Phpactor\WorseReflection\Core\Exception\SourceNotFound;
 use Phpactor\WorseReflection\Core\Name;

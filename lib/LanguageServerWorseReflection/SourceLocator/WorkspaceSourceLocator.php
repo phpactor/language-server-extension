@@ -2,13 +2,9 @@
 
 namespace Phpactor\Extension\LanguageServerWorseReflection\SourceLocator;
 
-use LanguageServerProtocol\TextDocumentItem;
 use Phpactor\Extension\LanguageServerWorseReflection\Workspace\WorkspaceIndex;
-use Phpactor\LanguageServer\Core\Session\Workspace;
-use Phpactor\TextDocument\TextDocumentBuilder;
 use Phpactor\WorseReflection\Core\Exception\SourceNotFound;
 use Phpactor\WorseReflection\Core\Name;
-use Phpactor\WorseReflection\Core\Reflector\SourceCodeReflector;
 use Phpactor\WorseReflection\Core\SourceCode;
 use Phpactor\WorseReflection\Core\SourceCodeLocator;
 

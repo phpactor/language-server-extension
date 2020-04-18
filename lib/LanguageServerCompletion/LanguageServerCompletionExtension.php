@@ -8,13 +8,11 @@ use Phpactor\Container\Extension;
 use Phpactor\Extension\Completion\CompletionExtension;
 use Phpactor\Extension\LanguageServerCompletion\Handler\HoverHandler;
 use Phpactor\Extension\LanguageServerCompletion\Handler\SignatureHelpHandler;
-use Phpactor\Extension\LanguageServerWorseReflection\SourceLocator\WorkspaceSourceLocator;
 use Phpactor\Extension\LanguageServerCompletion\Util\SuggestionNameFormatter;
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\Extension\LanguageServerCompletion\Handler\CompletionHandler;
 use Phpactor\Extension\WorseReflection\WorseReflectionExtension;
 use Phpactor\MapResolver\Resolver;
-use Phpactor\WorseReflection\ReflectorBuilder;
 
 class LanguageServerCompletionExtension implements Extension
 {
