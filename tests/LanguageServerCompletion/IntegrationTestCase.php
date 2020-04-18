@@ -34,7 +34,7 @@ class IntegrationTestCase extends TestCase
             CompletionWorseExtension::class,
             SourceCodeFilesystemExtension::class,
         ], [
-            FilePathResolverExtension::PARAM_APPLICATION_ROOT => __DIR__ .'/..'
+            FilePathResolverExtension::PARAM_APPLICATION_ROOT => __DIR__ .'/../../'
         ]);
         
         $builder = $container->get(LanguageServerExtension::SERVICE_LANGUAGE_SERVER_BUILDER);

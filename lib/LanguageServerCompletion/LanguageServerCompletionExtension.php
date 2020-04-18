@@ -27,7 +27,6 @@ class LanguageServerCompletionExtension implements Extension
     public function load(ContainerBuilder $container)
     {
         $this->registerHandlers($container);
-        $this->registerSourceLocator($container);
     }
 
     /**
@@ -72,17 +71,5 @@ class LanguageServerCompletionExtension implements Extension
                 $container->get(CompletionExtension::SERVICE_FORMATTER)
             );
         }, [ LanguageServerExtension::TAG_SESSION_HANDLER => []]);
-    }
-
-    private function registerSourceLocator(ContainerBuilder $container): void
-    {
-        $container->register(WorkspaceSourceLocator::class, function (Container $container) {
-            return new WorkspaceSourceLocator(
-                $container->get(LanguageServerExtension::SERVICE_SESSION_WORKSPACE),
-                ReflectorBuilder::create()->build()
-            );
-        }, [ WorseReflectionExtension::TAG_SOURCE_LOCATOR => [
-            'priority' => 255,
-        ]]);
     }
 }
