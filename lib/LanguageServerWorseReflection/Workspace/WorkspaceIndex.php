@@ -21,11 +21,6 @@ class WorkspaceIndex
      */
     private $byName = [];
 
-    /**
-     * @var array<string, TextDocument>
-     */
-    private $byFunction = [];
-
     public function __construct(SourceCodeReflector $reflector)
     {
         $this->reflector = $reflector;
