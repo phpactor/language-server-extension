@@ -11,7 +11,6 @@ use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\ReferenceFinder\ReferenceFinderExtension;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
-use Phpactor\LanguageServer\Core\Rpc\ResponseError;
 use Phpactor\LanguageServer\Core\Server\ResponseWatcher;
 use Phpactor\LanguageServer\Core\Server\ServerClient;
 use Phpactor\LanguageServer\Core\Server\Transmitter\NullMessageTransmitter;
@@ -47,8 +46,7 @@ class LanguageServerReferenceFinderExtensionTest extends TestCase
             'position' => [
             ],
         ]);
-        $this->assertInstanceOf(ResponseError::class, $response->error);
-        $this->assertStringContainsString('No type locators', $response->error->message);
+        $this->assertNull($response->result, 'Type was not found');
     }
 
     private function createTester(): ServerTester

@@ -12,6 +12,7 @@ use Phpactor\Extension\LanguageServer\Helper\OffsetHelper;
 use Phpactor\LanguageServer\Core\Handler\CanRegisterCapabilities;
 use Phpactor\LanguageServer\Core\Handler\Handler;
 use Phpactor\LanguageServer\Core\Session\Workspace;
+use Phpactor\ReferenceFinder\Exception\CouldNotLocateType;
 use Phpactor\ReferenceFinder\TypeLocator;
 use Phpactor\TextDocument\ByteOffset;
 use Phpactor\TextDocument\TextDocumentBuilder;
@@ -51,10 +52,14 @@ class TypeDefinitionHandler implements Handler, CanRegisterCapabilities
 
             $offset = $position->toOffset($textDocument->text);
 
-            $location = $this->typeLocator->locateType(
-                TextDocumentBuilder::create($textDocument->text)->uri($textDocument->uri)->language('php')->build(),
-                ByteOffset::fromInt($offset)
-            );
+            try {
+                $location = $this->typeLocator->locateType(
+                    TextDocumentBuilder::create($textDocument->text)->uri($textDocument->uri)->language('php')->build(),
+                    ByteOffset::fromInt($offset)
+                );
+            } catch (CouldNotLocateType $type) {
+                return null;
+            }
 
             // this _should_ exist for sure, but would be better to refactor the
             // goto type result to return the source code.
