@@ -7,6 +7,7 @@ use LanguageServerProtocol\Position;
 use LanguageServerProtocol\TextDocumentIdentifier;
 use LanguageServerProtocol\TextDocumentItem;
 use Phpactor\Extension\LanguageServerReferenceFinder\Handler\GotoDefinitionHandler;
+use Phpactor\LanguageServer\Core\Server\ServerClient;
 use Phpactor\LanguageServer\Core\Session\Workspace;
 use Phpactor\LanguageServer\Test\HandlerTester;
 use Phpactor\ReferenceFinder\DefinitionLocation;
@@ -45,9 +46,15 @@ class GotoDefinitionHandlerTest extends TestCase
      */
     private $workspace;
 
+    /**
+     * @var ObjectProphecy
+     */
+    private $serverClient;
+
     protected function setUp(): void
     {
         $this->locator = $this->prophesize(DefinitionLocator::class);
+        $this->serverClient = $this->prophesize(ServerClient::class);
         $this->workspace = new Workspace();
 
         $this->document = new TextDocumentItem();
@@ -75,11 +82,12 @@ class GotoDefinitionHandlerTest extends TestCase
 
         $tester = new HandlerTester(new GotoDefinitionHandler(
             $this->workspace,
-            $this->locator->reveal()
+            $this->locator->reveal(),
         ));
         $response = $tester->dispatchAndWait('textDocument/definition', [
             'textDocument' => $this->identifier,
             'position' => $this->position,
+            'client' => $this->serverClient->reveal()
         ]);
         $location = $response->result;
         $this->assertInstanceOf(Location::class, $location);

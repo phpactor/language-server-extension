@@ -13,6 +13,7 @@ use Phpactor\LanguageServer\Core\Handler\CanRegisterCapabilities;
 use Phpactor\LanguageServer\Core\Handler\Handler;
 use Phpactor\LanguageServer\Core\Session\Workspace;
 use Phpactor\ReferenceFinder\DefinitionLocator;
+use Phpactor\ReferenceFinder\Exception\CouldNotLocateDefinition;
 use Phpactor\TextDocument\ByteOffset;
 use Phpactor\TextDocument\TextDocumentBuilder;
 use RuntimeException;
@@ -51,11 +52,14 @@ class GotoDefinitionHandler implements Handler, CanRegisterCapabilities
 
             $offset = $position->toOffset($textDocument->text);
 
-            $location = $this->definitionLocator->locateDefinition(
-                TextDocumentBuilder::create($textDocument->text)->uri($textDocument->uri)->language('php')->build(),
-                ByteOffset::fromInt($offset)
-            );
-
+            try {
+                $location = $this->definitionLocator->locateDefinition(
+                    TextDocumentBuilder::create($textDocument->text)->uri($textDocument->uri)->language('php')->build(),
+                    ByteOffset::fromInt($offset)
+                );
+            } catch (CouldNotLocateDefinition $couldNotLocateDefinition) {
+                return null;
+            }
 
             // this _should_ exist for sure, but would be better to refactor the
             // goto definition result to return the source code.

@@ -18,7 +18,7 @@ class LanguageServerReferenceFinderExtension implements Extension
      */
     public function load(ContainerBuilder $container)
     {
-        $container->register('worse_language_server.handler.goto_definition', function (Container $container) {
+        $container->register(GotoDefinitionHandler::class, function (Container $container) {
             return new GotoDefinitionHandler(
                 $container->get(LanguageServerExtension::SERVICE_SESSION_WORKSPACE),
                 $container->get(ReferenceFinderExtension::SERVICE_DEFINITION_LOCATOR)

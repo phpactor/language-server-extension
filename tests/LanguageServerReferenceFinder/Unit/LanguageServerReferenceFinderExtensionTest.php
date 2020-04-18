@@ -12,6 +12,9 @@ use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\ReferenceFinder\ReferenceFinderExtension;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
 use Phpactor\LanguageServer\Core\Rpc\ResponseError;
+use Phpactor\LanguageServer\Core\Server\ResponseWatcher;
+use Phpactor\LanguageServer\Core\Server\ServerClient;
+use Phpactor\LanguageServer\Core\Server\Transmitter\NullMessageTransmitter;
 use Phpactor\LanguageServer\LanguageServerBuilder;
 use Phpactor\LanguageServer\Test\ServerTester;
 
@@ -21,15 +24,16 @@ class LanguageServerReferenceFinderExtensionTest extends TestCase
     {
         $tester = $this->createTester();
         $tester->initialize();
-        $tester->openDocument(new TextDocumentItem(__FILE__, 'php', 1, file_get_contents(__FILE__)));
+        $tester->openDocument(new TextDocumentItem(__FILE__, 'php', 84, file_get_contents(__FILE__)));
 
         $response = $tester->dispatchAndWait(1, 'textDocument/definition', [
             'textDocument' => new TextDocumentIdentifier(__FILE__),
             'position' => [
             ],
+        ], [
+            new ServerClient(new NullMessageTransmitter(), new ResponseWatcher())
         ]);
-        $this->assertInstanceOf(ResponseError::class, $response->error);
-        $this->assertStringContainsString('No definition locator', $response->error->message);
+        $this->assertNull($response->result, 'Definition was not found');
     }
 
     public function testTypeDefinition()
