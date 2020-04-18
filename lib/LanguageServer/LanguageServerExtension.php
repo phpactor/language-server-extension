@@ -2,6 +2,8 @@
 
 namespace Phpactor\Extension\LanguageServer;
 
+use Phly\EventDispatcher\EventDispatcher;
+use Phly\EventDispatcher\ListenerProvider\ListenerProviderAggregate;
 use Phpactor\Container\Container;
 use Phpactor\Container\ContainerBuilder;
 use Phpactor\Container\Extension;
@@ -15,6 +17,7 @@ use Phpactor\LanguageServer\Handler\System\ServiceHandler;
 use Phpactor\LanguageServer\Handler\TextDocument\TextDocumentHandler;
 use Phpactor\LanguageServer\LanguageServerBuilder;
 use Phpactor\MapResolver\Resolver;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class LanguageServerExtension implements Extension
 {
@@ -22,6 +25,7 @@ class LanguageServerExtension implements Extension
     const SERVICE_EVENT_EMITTER = 'language_server.event_emitter';
 
     const TAG_SESSION_HANDLER = 'language_server.session_handler';
+    const TAG_LISTENER_PROVIDER = 'language_server.listener_provider';
 
     const PARAM_WELCOME_MESSAGE = 'language_server.welcome_message';
     const SERVICE_SESSION_WORKSPACE = 'language_server.session.workspace';
@@ -44,6 +48,7 @@ class LanguageServerExtension implements Extension
         $this->registerServer($container);
         $this->registerCommand($container);
         $this->registerSession($container);
+        $this->registerEventDispatcher($container);
     }
 
     private function registerServer(ContainerBuilder $container): void
@@ -78,7 +83,7 @@ class LanguageServerExtension implements Extension
     private function registerSession(ContainerBuilder $container): void
     {
         $container->register(self::SERVICE_SESSION_WORKSPACE, function (Container $container) {
-            return new Workspace();
+            return new Workspace($container->get(EventDispatcherInterface::class));
         });
 
         $container->register('language_server.session.handler.text_document', function (Container $container) {
@@ -92,5 +97,17 @@ class LanguageServerExtension implements Extension
         $container->register(ServiceHandler::class, function (Container $container) {
             return new ServiceHandler();
         }, [ self::TAG_SESSION_HANDLER => []]);
+    }
+
+    private function registerEventDispatcher(ContainerBuilder $container): void
+    {
+        $container->register(EventDispatcherInterface::class, function (Container $container) {
+            $aggregate = new ListenerProviderAggregate();
+            foreach (array_keys($container->getServiceIdsForTag(self::TAG_LISTENER_PROVIDER)) as $serviceId) {
+                $aggregate->attach($container->get($serviceId));
+            }
+
+            return new EventDispatcher($aggregate);
+        });
     }
 }

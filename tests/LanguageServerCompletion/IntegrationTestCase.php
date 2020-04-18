@@ -9,6 +9,7 @@ use Phpactor\Extension\CompletionWorse\CompletionWorseExtension;
 use Phpactor\Extension\Completion\CompletionExtension;
 use Phpactor\Extension\ComposerAutoloader\ComposerAutoloaderExtension;
 use Phpactor\Extension\LanguageServerCompletion\LanguageServerCompletionExtension;
+use Phpactor\Extension\LanguageServerWorseReflection\LanguageServerWorseReflectionExtension;
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\SourceCodeFilesystem\SourceCodeFilesystemExtension;
@@ -33,8 +34,9 @@ class IntegrationTestCase extends TestCase
             WorseReflectionExtension::class,
             CompletionWorseExtension::class,
             SourceCodeFilesystemExtension::class,
+            LanguageServerWorseReflectionExtension::class,
         ], [
-            FilePathResolverExtension::PARAM_APPLICATION_ROOT => __DIR__ .'/..'
+            FilePathResolverExtension::PARAM_APPLICATION_ROOT => __DIR__ .'/../../'
         ]);
         
         $builder = $container->get(LanguageServerExtension::SERVICE_LANGUAGE_SERVER_BUILDER);

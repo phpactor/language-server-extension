@@ -6,6 +6,8 @@ use Phpactor\Container\Container;
 use Phpactor\Container\ContainerBuilder;
 use Phpactor\Container\Extension;
 use Phpactor\Extension\LanguageServerWorseReflection\SourceLocator\WorkspaceSourceLocator;
+use Phpactor\Extension\LanguageServerWorseReflection\Workspace\WorkspaceIndex;
+use Phpactor\Extension\LanguageServerWorseReflection\Workspace\WorkspaceIndexListener;
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\Extension\WorseReflection\WorseReflectionExtension;
 use Phpactor\MapResolver\Resolver;
@@ -29,11 +31,22 @@ class LanguageServerWorseReflectionExtension implements Extension
     {
         $container->register(WorkspaceSourceLocator::class, function (Container $container) {
             return new WorkspaceSourceLocator(
-                $container->get(LanguageServerExtension::SERVICE_SESSION_WORKSPACE),
-                ReflectorBuilder::create()->build()
+                $container->get(WorkspaceIndex::class)
             );
         }, [ WorseReflectionExtension::TAG_SOURCE_LOCATOR => [
             'priority' => 255,
         ]]);
+
+        $container->register(WorkspaceIndexListener::class, function (Container $container) {
+            return new WorkspaceIndexListener(
+                $container->get(WorkspaceIndex::class),
+            );
+        }, [ LanguageServerExtension::TAG_LISTENER_PROVIDER => [] ]);
+
+        $container->register(WorkspaceIndex::class, function (Container $container) {
+            return new WorkspaceIndex(
+                ReflectorBuilder::create()->build()
+            );
+        });
     }
 }
