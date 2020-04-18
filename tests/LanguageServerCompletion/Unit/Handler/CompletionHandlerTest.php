@@ -138,6 +138,9 @@ class CompletionHandlerTest extends TestCase
                 'type' => Suggestion::TYPE_METHOD,
                 'snippet' => 'goodbye()',
             ]),
+            Suggestion::createWithOptions('$var', [
+                'type' => Suggestion::TYPE_VARIABLE,
+            ]),
         ]);
         $response = $tester->dispatchAndWait(
             'textDocument/completion',
@@ -149,6 +152,7 @@ class CompletionHandlerTest extends TestCase
         $this->assertEquals([
             new CompletionItem('hello', 2, '', '', null, null, 'hello', null, null, null, null, 1),
             new CompletionItem('goodbye', 2, '', '', null, null, 'goodbye()', null, null, null, null, 2),
+            new CompletionItem('var', 6, '', '', null, null, 'var', null, null, null, null, 1),
         ], $response->result->items);
     }
 
@@ -161,7 +165,7 @@ class CompletionHandlerTest extends TestCase
         return new HandlerTester(new CompletionHandler(
             $this->workspace,
             $registry,
-            new SuggestionNameFormatter(),
+            new SuggestionNameFormatter(true),
             true
         ));
     }

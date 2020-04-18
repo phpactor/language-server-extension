@@ -91,11 +91,12 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
             $completionList->isIncomplete = true;
 
             foreach ($suggestions as $suggestion) {
-                $insertText = $suggestion->snippet() ?: $suggestion->name();
+                $name = $this->suggestionNameFormatter->format($suggestion);
+                $insertText = $suggestion->snippet() ?: $name;
                 $insertTextFormat = $suggestion->snippet() ? InsertTextFormat::SNIPPET : InsertTextFormat::PLAIN_TEXT;
 
                 $completionList->items[] = new CompletionItem(
-                    $this->suggestionNameFormatter->format($suggestion), // TODO Should use $suggestion->label() ?
+                    $name,
                     PhpactorToLspCompletionType::fromPhpactorType($suggestion->type()),
                     $suggestion->shortDescription(),
                     $suggestion->documentation(),
