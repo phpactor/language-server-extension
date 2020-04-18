@@ -83,7 +83,7 @@ class LanguageServerExtension implements Extension
     private function registerSession(ContainerBuilder $container): void
     {
         $container->register(self::SERVICE_SESSION_WORKSPACE, function (Container $container) {
-            return new Workspace();
+            return new Workspace($container->get(EventDispatcherInterface::class));
         });
 
         $container->register('language_server.session.handler.text_document', function (Container $container) {
