@@ -1,6 +1,6 @@
 <?php
 
-namespace Phpactor\Extension\LanguageServer\Tests\orseReflection\Workspace;
+namespace Phpactor\Extension\LanguageServerWorseReflection\Tests\Unit\Workspace;
 
 use LanguageServerProtocol\TextDocumentIdentifier;
 use LanguageServerProtocol\TextDocumentItem;
@@ -59,7 +59,7 @@ class WorkspaceIndexListenerTest extends TestCase
         )->shouldHaveBeenCalled();
     }
 
-    public function testUpdated()
+    public function testUpdated(): void
     {
         $item = new VersionedTextDocumentIdentifier('/barfoo');
         $this->dispatcher->dispatch(new TextDocumentUpdated(
