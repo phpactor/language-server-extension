@@ -25,7 +25,7 @@ class PhpactorHandlerLoader implements HandlerLoader
 
     public function load(InitializeParams $params): Handlers
     {
-        $container = $this->createContainer($params->rootUri, $params->initializationOptions);
+        $container = $this->createContainer($params);
         $handlers = [];
 
         foreach (array_keys(
@@ -37,11 +37,13 @@ class PhpactorHandlerLoader implements HandlerLoader
         return new Handlers($handlers);
     }
 
-    protected function createContainer(string $rootUri, array $config): Container
+    protected function createContainer(InitializeParams $params): Container
     {
         $container = $this->container;
         $parameters = $container->getParameters();
-        $parameters[FilePathResolverExtension::PARAM_PROJECT_ROOT] = TextDocumentUri::fromString($rootUri)->path();
+        $parameters[FilePathResolverExtension::PARAM_PROJECT_ROOT] = TextDocumentUri::fromString(
+            $params->rootUri
+        )->path();
 
         $extensionClasses = $container->getParameter(
             PhpactorContainer::PARAM_EXTENSION_CLASSES
@@ -56,7 +58,9 @@ class PhpactorHandlerLoader implements HandlerLoader
 
         $container = PhpactorContainer::fromExtensions(
             $extensionClasses,
-            array_merge($parameters, $config)
+            array_merge($parameters, $params->initializationOptions, [
+                LanguageServerExtension::PARAM_CLIENT_CAPABILITIES => $params->capabilities
+            ])
         );
 
         return $container;
