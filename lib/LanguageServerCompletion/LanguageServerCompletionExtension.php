@@ -40,33 +40,35 @@ class LanguageServerCompletionExtension implements Extension
     private function registerHandlers(ContainerBuilder $container): void
     {
         $container->register('language_server_completion.handler.completion', function (Container $container) {
+            $capabilities = $container->getParameter(LanguageServerExtension::PARAM_CLIENT_CAPABILITIES);
             return new CompletionHandler(
                 $container->get(LanguageServerExtension::SERVICE_SESSION_WORKSPACE),
                 $container->get(CompletionExtension::SERVICE_REGISTRY),
-                $container->get(SuggestionNameFormatter::class)
+                $container->get(SuggestionNameFormatter::class),
+                $capabilities['textDocument']['completion']['completionItem']['snippetSupport'] ?? false
             );
         }, [ LanguageServerExtension::TAG_SESSION_HANDLER => [
             'methods' => [
                 'textDocument/completion'
             ]
         ]]);
-        
+
         $container->register(SuggestionNameFormatter::class, function (Container $container) {
             return new SuggestionNameFormatter($container->getParameter(self::PARAM_TRIM_LEADING_DOLLAR));
         });
-        
+
         $container->register('language_server_completion.handler.signature_help', function (Container $container) {
             return new SignatureHelpHandler(
                 $container->get(LanguageServerExtension::SERVICE_SESSION_WORKSPACE),
                 $container->get(CompletionExtension::SERVICE_SIGNATURE_HELPER)
             );
         }, [ LanguageServerExtension::TAG_SESSION_HANDLER => [] ]);
-        
+
         $container->register('language_server_completion.handler.hover', function (Container $container) {
             return new HoverHandler(
                 $container->get(LanguageServerExtension::SERVICE_SESSION_WORKSPACE),
                 $container->get(WorseReflectionExtension::SERVICE_REFLECTOR),
-                $container->get(CompletionExtension::SERVICE_FORMATTER)
+                $container->get(CompletionExtension::SERVICE_SHORT_DESC_FORMATTER)
             );
         }, [ LanguageServerExtension::TAG_SESSION_HANDLER => []]);
     }

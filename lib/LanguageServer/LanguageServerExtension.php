@@ -30,13 +30,16 @@ class LanguageServerExtension implements Extension
     const PARAM_WELCOME_MESSAGE = 'language_server.welcome_message';
     const SERVICE_SESSION_WORKSPACE = 'language_server.session.workspace';
 
+    const PARAM_CLIENT_CAPABILITIES = 'language_server.client_capabilities';
+
     /**
      * {@inheritDoc}
      */
     public function configure(Resolver $schema)
     {
         $schema->setDefaults([
-            self::PARAM_WELCOME_MESSAGE => 'Welcome to a Phpactor Language Server'
+            self::PARAM_WELCOME_MESSAGE => 'Welcome to a Phpactor Language Server',
+            self::PARAM_CLIENT_CAPABILITIES => [],
         ]);
     }
 
@@ -60,7 +63,7 @@ class LanguageServerExtension implements Extension
             $builder->addHandlerLoader(
                 $container->get('language_server.handler_loader.phpactor')
             );
-        
+
             return $builder;
         });
 

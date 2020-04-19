@@ -9,6 +9,7 @@ use Amp\Promise;
 use LanguageServerProtocol\CompletionItem;
 use LanguageServerProtocol\CompletionList;
 use LanguageServerProtocol\CompletionOptions;
+use LanguageServerProtocol\InsertTextFormat;
 use LanguageServerProtocol\Position;
 use LanguageServerProtocol\Range;
 use LanguageServerProtocol\ServerCapabilities;
@@ -54,16 +55,23 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
      */
     private $workspace;
 
+    /**
+     * @var bool
+     */
+    private $supportSnippets;
+
     public function __construct(
         Workspace $workspace,
         TypedCompletorRegistry $registry,
         SuggestionNameFormatter $suggestionNameFormatter,
+        bool $supportSnippets,
         bool $provideTextEdit = false
     ) {
         $this->registry = $registry;
         $this->provideTextEdit = $provideTextEdit;
         $this->workspace = $workspace;
         $this->suggestionNameFormatter = $suggestionNameFormatter;
+        $this->supportSnippets = $supportSnippets;
     }
 
     public function methods(): array
@@ -90,16 +98,31 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
             $completionList->isIncomplete = true;
 
             foreach ($suggestions as $suggestion) {
-                /** @var Suggestion $suggestion */
+                $name = $this->suggestionNameFormatter->format($suggestion);
+                $insertText = $name;
+                $insertTextFormat = InsertTextFormat::PLAIN_TEXT;
+
+                if ($this->supportSnippets) {
+                    $insertText = $suggestion->snippet() ?: $name;
+                    $insertTextFormat = $suggestion->snippet()
+                        ? InsertTextFormat::SNIPPET
+                        : InsertTextFormat::PLAIN_TEXT
+                    ;
+                }
+
                 $completionList->items[] = new CompletionItem(
-                    $this->suggestionNameFormatter->format($suggestion),
+                    $name,
                     PhpactorToLspCompletionType::fromPhpactorType($suggestion->type()),
                     $suggestion->shortDescription(),
                     $suggestion->documentation(),
                     null,
                     null,
+                    $insertText,
+                    $this->textEdit($suggestion, $textDocument),
                     null,
-                    $this->textEdit($suggestion, $textDocument)
+                    null,
+                    null,
+                    $insertTextFormat
                 );
 
                 try {

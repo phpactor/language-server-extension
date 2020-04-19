@@ -3,6 +3,7 @@
 namespace Phpactor\Extension\LanguageServerCompletion\Tests\Unit\Handler;
 
 use Amp\Delayed;
+use DTL\Invoke\Invoke;
 use Generator;
 use LanguageServerProtocol\CompletionItem;
 use LanguageServerProtocol\CompletionList;
@@ -21,9 +22,12 @@ use Phpactor\LanguageServer\Core\Session\Workspace;
 use Phpactor\LanguageServer\Test\HandlerTester;
 use Phpactor\TextDocument\ByteOffset;
 use Phpactor\TextDocument\TextDocument;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class CompletionHandlerTest extends TestCase
 {
+    use ProphecyTrait;
+
     /**
      * @var TextDocumentItem
      */
@@ -33,7 +37,6 @@ class CompletionHandlerTest extends TestCase
      * @var Position
      */
     private $position;
-
 
     public function setUp(): void
     {
@@ -75,8 +78,8 @@ class CompletionHandlerTest extends TestCase
         );
         $this->assertInstanceOf(CompletionList::class, $response->result);
         $this->assertEquals([
-            new CompletionItem('hello'),
-            new CompletionItem('goodbye'),
+            self::completionItem('hello', null),
+            self::completionItem('goodbye', null),
         ], $response->result->items);
     }
 
@@ -93,10 +96,10 @@ class CompletionHandlerTest extends TestCase
             ]
         );
         $this->assertEquals([
-            new CompletionItem('hello', null, '', null, null, null, null, new TextEdit(
+            self::completionItem('hello', null, ['textEdit' => new TextEdit(
                 new Range(new Position(0, 1), new Position(0, 2)),
                 'hello'
-            )),
+            )])
         ], $response->result->items);
     }
 
@@ -125,7 +128,80 @@ class CompletionHandlerTest extends TestCase
         $this->assertGreaterThan(1, count($responses[0]->result->items));
     }
 
-    private function create(array $suggestions): HandlerTester
+    public function testHandleSuggestionsWithSnippets()
+    {
+        $tester = $this->create([
+            Suggestion::createWithOptions('hello', [
+                'type' => Suggestion::TYPE_METHOD,
+                'label' => 'hello'
+            ]),
+            Suggestion::createWithOptions('goodbye', [
+                'type' => Suggestion::TYPE_METHOD,
+                'snippet' => 'goodbye()',
+            ]),
+            Suggestion::createWithOptions('$var', [
+                'type' => Suggestion::TYPE_VARIABLE,
+            ]),
+        ]);
+        $response = $tester->dispatchAndWait(
+            'textDocument/completion',
+            [
+                'textDocument' => $this->document,
+                'position' => $this->position
+            ]
+        );
+        $this->assertEquals([
+            self::completionItem('hello', 2),
+            self::completionItem('goodbye', 2, ['insertText' => 'goodbye()', 'insertTextFormat' => 2]),
+            self::completionItem('var', 6),
+        ], $response->result->items);
+    }
+
+    public function testHandleSuggestionsWithSnippetsWhenClientDoesNotSupportIt()
+    {
+        $tester = $this->create([
+            Suggestion::createWithOptions('hello', [
+                'type' => Suggestion::TYPE_METHOD,
+                'label' => 'hello'
+            ]),
+            Suggestion::createWithOptions('goodbye', [
+                'type' => Suggestion::TYPE_METHOD,
+                'snippet' => 'goodbye()',
+            ]),
+            Suggestion::createWithOptions('$var', [
+                'type' => Suggestion::TYPE_VARIABLE,
+            ]),
+        ], false);
+        $response = $tester->dispatchAndWait(
+            'textDocument/completion',
+            [
+                'textDocument' => $this->document,
+                'position' => $this->position
+            ]
+        );
+        $this->assertEquals([
+            self::completionItem('hello', 2),
+            self::completionItem('goodbye', 2),
+            self::completionItem('var', 6),
+        ], $response->result->items);
+    }
+
+    private static function completionItem(
+        string $label,
+        ?int $type,
+        array $data = []
+    ): CompletionItem {
+        return Invoke::new(CompletionItem::class, \array_merge([
+            'label' => $label,
+            'kind' => $type,
+            'detail' => '',
+            'documentation' => '',
+            'insertText' => $label,
+            'insertTextFormat' => 1,
+        ], $data));
+    }
+
+    private function create(array $suggestions, bool $supportSnippets = true): HandlerTester
     {
         $completor = $this->createCompletor($suggestions);
         $registry = new TypedCompletorRegistry([
@@ -134,7 +210,8 @@ class CompletionHandlerTest extends TestCase
         return new HandlerTester(new CompletionHandler(
             $this->workspace,
             $registry,
-            new SuggestionNameFormatter(),
+            new SuggestionNameFormatter(true),
+            $supportSnippets,
             true
         ));
     }
