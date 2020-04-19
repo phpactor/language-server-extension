@@ -3,6 +3,7 @@
 namespace Phpactor\Extension\LanguageServerCompletion\Tests\Unit\Handler;
 
 use Amp\Delayed;
+use DTL\Invoke\Invoke;
 use Generator;
 use LanguageServerProtocol\CompletionItem;
 use LanguageServerProtocol\CompletionList;
@@ -77,8 +78,8 @@ class CompletionHandlerTest extends TestCase
         );
         $this->assertInstanceOf(CompletionList::class, $response->result);
         $this->assertEquals([
-            new CompletionItem('hello', null, null, null, null, null, 'hello', null, null, null, null, 1),
-            new CompletionItem('goodbye', null, null, null, null, null, 'goodbye', null, null, null, null, 1),
+            self::completionItem('hello', null),
+            self::completionItem('goodbye', null),
         ], $response->result->items);
     }
 
@@ -95,10 +96,10 @@ class CompletionHandlerTest extends TestCase
             ]
         );
         $this->assertEquals([
-            new CompletionItem('hello', null, '', null, null, null, 'hello', new TextEdit(
+            self::completionItem('hello', null, ['textEdit' => new TextEdit(
                 new Range(new Position(0, 1), new Position(0, 2)),
                 'hello'
-            ), null, null, null, 1),
+            )])
         ], $response->result->items);
     }
 
@@ -150,13 +151,28 @@ class CompletionHandlerTest extends TestCase
             ]
         );
         $this->assertEquals([
-            new CompletionItem('hello', 2, '', '', null, null, 'hello', null, null, null, null, 1),
-            new CompletionItem('goodbye', 2, '', '', null, null, 'goodbye()', null, null, null, null, 2),
-            new CompletionItem('var', 6, '', '', null, null, 'var', null, null, null, null, 1),
+            self::completionItem('hello', 2),
+            self::completionItem('goodbye', 2, ['insertText' => 'goodbye()', 'insertTextFormat' => 2]),
+            self::completionItem('var', 6),
         ], $response->result->items);
     }
 
-    private function create(array $suggestions): HandlerTester
+    private static function completionItem(
+        string $label,
+        ?int $type,
+        array $data = []
+    ): CompletionItem {
+        return Invoke::new(CompletionItem::class, \array_merge([
+            'label' => $label,
+            'kind' => $type,
+            'detail' => '',
+            'documentation' => '',
+            'insertText' => $label,
+            'insertTextFormat' => 1,
+        ], $data));
+    }
+
+    private function create(array $suggestions, bool $supportSnippets = true): HandlerTester
     {
         $completor = $this->createCompletor($suggestions);
         $registry = new TypedCompletorRegistry([
