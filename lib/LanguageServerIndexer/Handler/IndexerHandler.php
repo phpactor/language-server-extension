@@ -14,10 +14,13 @@ use Phpactor\LanguageServer\Core\Handler\ServiceProvider;
 use Phpactor\LanguageServer\Core\Rpc\NotificationMessage;
 use Phpactor\LanguageServer\Core\Server\Transmitter\MessageTransmitter;
 use Phpactor\Indexer\Model\Indexer;
+use Phpactor\LanguageServer\Core\Service\ServiceManager;
 use Psr\Log\LoggerInterface;
 
 class IndexerHandler implements ServiceProvider
 {
+    const SERVICE_INDEXER = 'indexer';
+
     /**
      * @var Indexer
      */
@@ -49,6 +52,7 @@ class IndexerHandler implements ServiceProvider
     public function methods(): array
     {
         return [
+            'indexer/reindex' => 'reindex',
         ];
     }
 
@@ -58,7 +62,7 @@ class IndexerHandler implements ServiceProvider
     public function services(): array
     {
         return [
-            'indexer'
+            self::SERVICE_INDEXER
         ];
     }
 
@@ -114,6 +118,21 @@ class IndexerHandler implements ServiceProvider
             }
 
             return new Success();
+        });
+    }
+
+    public function reindex(ServiceManager $serviceManager, bool $hard = false): Promise
+    {
+        return \Amp\call(function () use ($serviceManager, $hard) {
+            if ($serviceManager->isRunning(self::SERVICE_INDEXER)) {
+                $serviceManager->stop(self::SERVICE_INDEXER);
+            }
+
+            if ($hard) {
+                $this->indexer->reset();
+            }
+
+            $serviceManager->start(self::SERVICE_INDEXER);
         });
     }
 

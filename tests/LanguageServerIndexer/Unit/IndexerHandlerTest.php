@@ -9,6 +9,8 @@ use Phpactor\AmpFsWatch\Watcher\TestWatcher\TestWatcher;
 use Phpactor\Extension\LanguageServerIndexer\Handler\IndexerHandler;
 use Phpactor\Indexer\Model\Indexer;
 use Phpactor\LanguageServer\Core\Server\Transmitter\NullMessageTransmitter;
+use Phpactor\LanguageServer\Core\Service\ServiceManager;
+use Phpactor\LanguageServer\Test\HandlerTester;
 use Psr\Log\LoggerInterface;
 use Phpactor\Extension\LanguageServerIndexer\Tests\IntegrationTestCase;
 
@@ -19,9 +21,15 @@ class IndexerHandlerTest extends IntegrationTestCase
      */
     private $logger;
 
+    /**
+     * @var ObjectProphecy
+     */
+    private $serviceManager;
+
     protected function setUp(): void
     {
         $this->logger = $this->prophesize(LoggerInterface::class);
+        $this->serviceManager = $this->prophesize(ServiceManager::class);
     }
 
     public function testIndexer(): void
@@ -46,5 +54,37 @@ EOT
             'Indexed file: %s',
             $this->workspace()->path('Foobar.php')
         ))->shouldHaveBeenCalled();
+    }
+
+    public function testReindexNonStarted(): void
+    {
+        $indexer = $this->container()->get(Indexer::class);
+        $watcher = new TestWatcher(new ModifiedFileQueue());
+        $handlerTester = new HandlerTester(
+            new IndexerHandler($indexer, $watcher, $this->logger->reveal())
+        );
+
+        self::assertFalse($handlerTester->serviceManager()->isRunning(IndexerHandler::SERVICE_INDEXER));
+
+        $handlerTester->dispatchAndWait('indexer/reindex', []);
+
+        self::assertTrue($handlerTester->serviceManager()->isRunning(IndexerHandler::SERVICE_INDEXER));
+    }
+
+    public function testReindexHard(): void
+    {
+        $indexer = $this->container()->get(Indexer::class);
+        $watcher = new TestWatcher(new ModifiedFileQueue());
+        $handlerTester = new HandlerTester(
+            new IndexerHandler($indexer, $watcher, $this->logger->reveal())
+        );
+
+        $handlerTester->serviceManager()->start(IndexerHandler::SERVICE_INDEXER);
+
+        $handlerTester->dispatchAndWait('indexer/reindex', [
+            'hard' => true,
+        ]);
+
+        self::assertTrue($handlerTester->serviceManager()->isRunning(IndexerHandler::SERVICE_INDEXER));
     }
 }
