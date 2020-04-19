@@ -99,31 +99,19 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
             $completionList->isIncomplete = true;
 
             foreach ($suggestions as $suggestion) {
-                $name = $this->suggestionNameFormatter->format($suggestion);
-                $insertText = $name;
-                $insertTextFormat = InsertTextFormat::PLAIN_TEXT;
-
-                if ($this->shouldUseSnippet()) {
-                    $insertText = $suggestion->snippet() ?: $name;
-                    $insertTextFormat = $suggestion->snippet()
-                        ? InsertTextFormat::SNIPPET
-                        : InsertTextFormat::PLAIN_TEXT
-                    ;
-                }
-
                 $completionList->items[] = new CompletionItem(
-                    $name,
+                    $this->suggestionNameFormatter->format($suggestion),
                     PhpactorToLspCompletionType::fromPhpactorType($suggestion->type()),
                     $suggestion->shortDescription(),
                     $suggestion->documentation(),
                     null,
                     null,
-                    $insertText,
-                    $this->textEdit($insertText, $suggestion, $textDocument),
+                    $this->insertText($suggestion),
+                    $this->textEdit($suggestion, $textDocument),
                     null,
                     null,
                     null,
-                    $insertTextFormat
+                    $this->insertTextFormat($suggestion)
                 );
 
                 try {
@@ -144,11 +132,8 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
         $capabilities->signatureHelpProvider = new SignatureHelpOptions(['(', ',']);
     }
 
-    private function textEdit(
-        string $insertText,
-        Suggestion $suggestion,
-        TextDocumentItem $textDocument
-    ): ?TextEdit {
+    private function textEdit(Suggestion $suggestion, TextDocumentItem $textDocument): ?TextEdit
+    {
         if (false === $this->provideTextEdit) {
             return null;
         }
@@ -164,7 +149,7 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
                 OffsetHelper::offsetToPosition($textDocument->text, $range->start()->toInt()),
                 OffsetHelper::offsetToPosition($textDocument->text, $range->end()->toInt())
             ),
-            $insertText
+            $this->insertText($suggestion)
         );
     }
 
@@ -172,6 +157,22 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
     {
         return $this->clientCapabilities->has(ClientCapabilitiesProvider::COMPLETION_SUPPORT_SNIPPET)
             && $this->clientCapabilities->get(ClientCapabilitiesProvider::COMPLETION_SUPPORT_SNIPPET)
+        ;
+    }
+
+    private function insertText(Suggestion $suggestion): string
+    {
+        return $this->shouldUseSnippet() && $suggestion->snippet()
+            ? $suggestion->snippet()
+            : $this->suggestionNameFormatter->format($suggestion)
+        ;
+    }
+
+    private function insertTextFormat(Suggestion $suggestion): int
+    {
+        return $this->shouldUseSnippet() && $suggestion->snippet()
+            ? InsertTextFormat::SNIPPET
+            : InsertTextFormat::PLAIN_TEXT
         ;
     }
 }
