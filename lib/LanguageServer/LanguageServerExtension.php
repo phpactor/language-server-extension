@@ -9,6 +9,7 @@ use Phpactor\Container\ContainerBuilder;
 use Phpactor\Container\Extension;
 use Phpactor\Extension\LanguageServer\Handler\PhpactorHandlerLoader;
 use Phpactor\Extension\LanguageServer\Handler\SessionHandler;
+use Phpactor\Extension\LanguageServer\Util\ClientCapabilitiesProvider;
 use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\Console\ConsoleExtension;
 use Phpactor\Extension\LanguageServer\Command\StartCommand;
@@ -69,6 +70,12 @@ class LanguageServerExtension implements Extension
 
         $container->register('language_server.handler_loader.phpactor', function (Container $container) {
             return new PhpactorHandlerLoader($container);
+        });
+
+        $container->register(ClientCapabilitiesProvider::class, function (Container $container) {
+            return new ClientCapabilitiesProvider(
+                $container->getParameter(self::PARAM_CLIENT_CAPABILITIES)
+            );
         });
     }
 
