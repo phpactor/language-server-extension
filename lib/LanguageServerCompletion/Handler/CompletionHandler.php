@@ -119,7 +119,7 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
                     null,
                     null,
                     $insertText,
-                    $this->textEdit($suggestion, $textDocument),
+                    $this->textEdit($insertText, $suggestion, $textDocument),
                     null,
                     null,
                     null,
@@ -144,8 +144,11 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
         $capabilities->signatureHelpProvider = new SignatureHelpOptions(['(', ',']);
     }
 
-    private function textEdit(Suggestion $suggestion, TextDocumentItem $textDocument): ?TextEdit
-    {
+    private function textEdit(
+        string $insertText,
+        Suggestion $suggestion,
+        TextDocumentItem $textDocument
+    ): ?TextEdit {
         if (false === $this->provideTextEdit) {
             return null;
         }
@@ -161,7 +164,7 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
                 OffsetHelper::offsetToPosition($textDocument->text, $range->start()->toInt()),
                 OffsetHelper::offsetToPosition($textDocument->text, $range->end()->toInt())
             ),
-            $suggestion->name()
+            $insertText
         );
     }
 

@@ -140,6 +140,11 @@ class CompletionHandlerTest extends TestCase
             Suggestion::createWithOptions('$var', [
                 'type' => Suggestion::TYPE_VARIABLE,
             ]),
+            Suggestion::createWithOptions('hello', [
+                'type' => Suggestion::TYPE_METHOD,
+                'snippet' => 'hello()',
+                'range' => PhpactorRange::fromStartAndEnd(1, 2),
+            ]),
         ]);
         $response = $tester->dispatchAndWait(
             'textDocument/completion',
@@ -152,6 +157,14 @@ class CompletionHandlerTest extends TestCase
             self::completionItem('hello', 2),
             self::completionItem('goodbye', 2, ['insertText' => 'goodbye()', 'insertTextFormat' => 2]),
             self::completionItem('var', 6),
+            self::completionItem('hello', 2, [
+                'insertText' => 'hello()',
+                'insertTextFormat' => 2,
+                'textEdit' => new TextEdit(
+                    new Range(new Position(0, 1), new Position(0, 2)),
+                    'hello()'
+                ),
+            ])
         ], $response->result->items);
     }
 
@@ -169,6 +182,11 @@ class CompletionHandlerTest extends TestCase
             Suggestion::createWithOptions('$var', [
                 'type' => Suggestion::TYPE_VARIABLE,
             ]),
+            Suggestion::createWithOptions('hello', [
+                'type' => Suggestion::TYPE_METHOD,
+                'snippet' => 'hello()',
+                'range' => PhpactorRange::fromStartAndEnd(1, 2),
+            ]),
         ], false);
         $response = $tester->dispatchAndWait(
             'textDocument/completion',
@@ -181,6 +199,12 @@ class CompletionHandlerTest extends TestCase
             self::completionItem('hello', 2),
             self::completionItem('goodbye', 2),
             self::completionItem('var', 6),
+            self::completionItem('hello', 2, [
+                'textEdit' => new TextEdit(
+                    new Range(new Position(0, 1), new Position(0, 2)),
+                    'hello'
+                ),
+            ])
         ], $response->result->items);
     }
 
