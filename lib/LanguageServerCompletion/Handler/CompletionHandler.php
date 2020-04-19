@@ -22,6 +22,7 @@ use Phpactor\Completion\Core\TypedCompletorRegistry;
 use Phpactor\Extension\LanguageServerCompletion\Util\PhpactorToLspCompletionType;
 use Phpactor\Extension\LanguageServerCompletion\Util\SuggestionNameFormatter;
 use Phpactor\Extension\LanguageServer\Helper\OffsetHelper;
+use Phpactor\Extension\LanguageServer\Util\ClientCapabilitiesProvider;
 use Phpactor\LanguageServer\Core\Handler\CanRegisterCapabilities;
 use Phpactor\LanguageServer\Core\Handler\Handler;
 use Phpactor\LanguageServer\Core\Session\Workspace;
@@ -56,22 +57,22 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
     private $workspace;
 
     /**
-     * @var bool
+     * @var ClientCapabilitiesProvider
      */
-    private $supportSnippets;
+    private $clientCapabilities;
 
     public function __construct(
         Workspace $workspace,
         TypedCompletorRegistry $registry,
         SuggestionNameFormatter $suggestionNameFormatter,
-        bool $supportSnippets,
+        ClientCapabilitiesProvider $clientCapabilities,
         bool $provideTextEdit = false
     ) {
         $this->registry = $registry;
         $this->provideTextEdit = $provideTextEdit;
         $this->workspace = $workspace;
         $this->suggestionNameFormatter = $suggestionNameFormatter;
-        $this->supportSnippets = $supportSnippets;
+        $this->clientCapabilities = $clientCapabilities;
     }
 
     public function methods(): array
@@ -102,7 +103,7 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
                 $insertText = $name;
                 $insertTextFormat = InsertTextFormat::PLAIN_TEXT;
 
-                if ($this->supportSnippets) {
+                if ($this->shouldUseSnippet()) {
                     $insertText = $suggestion->snippet() ?: $name;
                     $insertTextFormat = $suggestion->snippet()
                         ? InsertTextFormat::SNIPPET
@@ -162,5 +163,12 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
             ),
             $suggestion->name()
         );
+    }
+
+    private function shouldUseSnippet(): bool
+    {
+        return $this->clientCapabilities->has(ClientCapabilitiesProvider::COMPLETION_SUPPORT_SNIPPET)
+            && $this->clientCapabilities->get(ClientCapabilitiesProvider::COMPLETION_SUPPORT_SNIPPET)
+        ;
     }
 }

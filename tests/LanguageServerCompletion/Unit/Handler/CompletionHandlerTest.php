@@ -18,6 +18,7 @@ use Phpactor\Completion\Core\Suggestion;
 use Phpactor\Completion\Core\TypedCompletorRegistry;
 use Phpactor\Extension\LanguageServerCompletion\Handler\CompletionHandler;
 use Phpactor\Extension\LanguageServerCompletion\Util\SuggestionNameFormatter;
+use Phpactor\Extension\LanguageServer\Util\ClientCapabilitiesProvider;
 use Phpactor\LanguageServer\Core\Session\Workspace;
 use Phpactor\LanguageServer\Test\HandlerTester;
 use Phpactor\TextDocument\ByteOffset;
@@ -208,7 +209,9 @@ class CompletionHandlerTest extends TestCase
             $this->workspace,
             $registry,
             new SuggestionNameFormatter(true),
-            $supportSnippets,
+            new ClientCapabilitiesProvider(['textDocument' => ['completion' => [
+                'completionItem' => ['snippetSupport' => $supportSnippets, ],
+            ]]]),
             true
         ));
     }
