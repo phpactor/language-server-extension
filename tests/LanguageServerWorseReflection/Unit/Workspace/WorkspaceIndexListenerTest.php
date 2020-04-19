@@ -5,21 +5,19 @@ namespace Phpactor\Extension\LanguageServerWorseReflection\Tests\Unit\Workspace;
 use LanguageServerProtocol\TextDocumentIdentifier;
 use LanguageServerProtocol\TextDocumentItem;
 use LanguageServerProtocol\VersionedTextDocumentIdentifier;
-use PHPUnit\Framework\TestCase;
 use Phly\EventDispatcher\EventDispatcher;
 use Phpactor\Extension\LanguageServerWorseReflection\Workspace\WorkspaceIndex;
 use Phpactor\Extension\LanguageServerWorseReflection\Workspace\WorkspaceIndexListener;
 use Phpactor\LanguageServer\Event\TextDocumentClosed;
 use Phpactor\LanguageServer\Event\TextDocumentOpened;
 use Phpactor\LanguageServer\Event\TextDocumentUpdated;
+use Phpactor\TestUtils\PHPUnit\TestCase;
 use Phpactor\TextDocument\TextDocumentBuilder;
 use Phpactor\TextDocument\TextDocumentUri;
 use Prophecy\PhpUnit\ProphecyTrait;
 
 class WorkspaceIndexListenerTest extends TestCase
 {
-    use ProphecyTrait;
-
     /**
      * @var ObjectProphecy
      */

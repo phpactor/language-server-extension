@@ -22,12 +22,9 @@ use Phpactor\LanguageServer\Core\Session\Workspace;
 use Phpactor\LanguageServer\Test\HandlerTester;
 use Phpactor\TextDocument\ByteOffset;
 use Phpactor\TextDocument\TextDocument;
-use Prophecy\PhpUnit\ProphecyTrait;
 
 class CompletionHandlerTest extends TestCase
 {
-    use ProphecyTrait;
-
     /**
      * @var TextDocumentItem
      */
