@@ -157,6 +157,35 @@ class CompletionHandlerTest extends TestCase
         ], $response->result->items);
     }
 
+    public function testHandleSuggestionsWithSnippetsWhenClientDoesNotSupportIt()
+    {
+        $tester = $this->create([
+            Suggestion::createWithOptions('hello', [
+                'type' => Suggestion::TYPE_METHOD,
+                'label' => 'hello'
+            ]),
+            Suggestion::createWithOptions('goodbye', [
+                'type' => Suggestion::TYPE_METHOD,
+                'snippet' => 'goodbye()',
+            ]),
+            Suggestion::createWithOptions('$var', [
+                'type' => Suggestion::TYPE_VARIABLE,
+            ]),
+        ], false);
+        $response = $tester->dispatchAndWait(
+            'textDocument/completion',
+            [
+                'textDocument' => $this->document,
+                'position' => $this->position
+            ]
+        );
+        $this->assertEquals([
+            self::completionItem('hello', 2),
+            self::completionItem('goodbye', 2),
+            self::completionItem('var', 6),
+        ], $response->result->items);
+    }
+
     private static function completionItem(
         string $label,
         ?int $type,
@@ -182,6 +211,7 @@ class CompletionHandlerTest extends TestCase
             $this->workspace,
             $registry,
             new SuggestionNameFormatter(true),
+            $supportSnippets,
             true
         ));
     }

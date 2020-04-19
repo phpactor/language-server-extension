@@ -40,10 +40,12 @@ class LanguageServerCompletionExtension implements Extension
     private function registerHandlers(ContainerBuilder $container): void
     {
         $container->register('language_server_completion.handler.completion', function (Container $container) {
+            $capabilities = $container->getParameter(LanguageServerExtension::PARAM_CLIENT_CAPABILITIES);
             return new CompletionHandler(
                 $container->get(LanguageServerExtension::SERVICE_SESSION_WORKSPACE),
                 $container->get(CompletionExtension::SERVICE_REGISTRY),
-                $container->get(SuggestionNameFormatter::class)
+                $container->get(SuggestionNameFormatter::class),
+                $capabilities['textDocument']['completion']['completionItem']['snippetSupport'] ?? false
             );
         }, [ LanguageServerExtension::TAG_SESSION_HANDLER => [
             'methods' => [

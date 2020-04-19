@@ -55,16 +55,23 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
      */
     private $workspace;
 
+    /**
+     * @var bool
+     */
+    private $supportSnippets;
+
     public function __construct(
         Workspace $workspace,
         TypedCompletorRegistry $registry,
         SuggestionNameFormatter $suggestionNameFormatter,
+        bool $supportSnippets,
         bool $provideTextEdit = false
     ) {
         $this->registry = $registry;
         $this->provideTextEdit = $provideTextEdit;
         $this->workspace = $workspace;
         $this->suggestionNameFormatter = $suggestionNameFormatter;
+        $this->supportSnippets = $supportSnippets;
     }
 
     public function methods(): array
@@ -92,8 +99,16 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
 
             foreach ($suggestions as $suggestion) {
                 $name = $this->suggestionNameFormatter->format($suggestion);
-                $insertText = $suggestion->snippet() ?: $name;
-                $insertTextFormat = $suggestion->snippet() ? InsertTextFormat::SNIPPET : InsertTextFormat::PLAIN_TEXT;
+                $insertText = $name;
+                $insertTextFormat = InsertTextFormat::PLAIN_TEXT;
+
+                if ($this->supportSnippets) {
+                    $insertText = $suggestion->snippet() ?: $name;
+                    $insertTextFormat = $suggestion->snippet()
+                        ? InsertTextFormat::SNIPPET
+                        : InsertTextFormat::PLAIN_TEXT
+                    ;
+                }
 
                 $completionList->items[] = new CompletionItem(
                     $name,
