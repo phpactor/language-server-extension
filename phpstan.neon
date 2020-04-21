@@ -4,8 +4,9 @@ parameters:
     checkMissingIterableValueType: false
     ignoreErrors:
         - '{return type with generic interface .*Promise does}'
-        - '{Unable to resolve the template type TReturn in call to function}'
+        - '{Unable to resolve the template type T.* in call to function}'
         - '{Access to an undefined.*typeDefinitionProvider}'
+        - '{Access to an undefined.*implementationProvider}'
         
     paths:
         - lib

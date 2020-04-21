@@ -15,10 +15,6 @@ use Phpactor\LanguageServer\Core\Session\Workspace;
 use Phpactor\ReferenceFinder\ClassImplementationFinder;
 use Phpactor\TextDocument\Location;
 use Phpactor\TextDocument\Locations;
-use Phpactor\TextDocument\Util\LineAtOffset;
-use Phpactor\TextDocument\Util\LineColFromOffset;
-use RuntimeException;
-use Phpactor\ReferenceFinder\Exception\CouldNotLocateDefinition;
 use Phpactor\TextDocument\ByteOffset;
 use Phpactor\TextDocument\TextDocumentBuilder;
 
@@ -96,7 +92,7 @@ class GotoImplementationHandler implements Handler, CanRegisterCapabilities
         return $lspLocations;
     }
 
-    public function registerCapabiltiies(ServerCapabilities $capabilities)
+    public function registerCapabiltiies(ServerCapabilities $capabilities): void
     {
         $capabilities->implementationProvider = true;
     }
