@@ -7,7 +7,6 @@ parameters:
         - '{Unable to resolve the template type T.* in call to function}'
         - '{Access to an undefined.*typeDefinitionProvider}'
         - '{Access to an undefined.*implementationProvider}'
-        
     paths:
         - lib
 
