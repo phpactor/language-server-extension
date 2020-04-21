@@ -15,7 +15,7 @@ class OffsetHelper
             return new Position($line, mb_strlen($text));
         }
 
-        $lastNewLinePos = strrpos($text, PHP_EOL);
+        $lastNewLinePos = mb_strrpos($text, PHP_EOL);
         $remainingLine = mb_substr($text, $lastNewLinePos + mb_strlen(PHP_EOL));
         $char = mb_strlen($remainingLine);
 

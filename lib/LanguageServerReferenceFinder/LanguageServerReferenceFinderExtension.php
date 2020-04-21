@@ -6,6 +6,7 @@ use Phpactor\Container\Container;
 use Phpactor\Container\ContainerBuilder;
 use Phpactor\Container\Extension;
 use Phpactor\Extension\LanguageServerReferenceFinder\Handler\GotoDefinitionHandler;
+use Phpactor\Extension\LanguageServerReferenceFinder\Handler\GotoImplementationHandler;
 use Phpactor\Extension\LanguageServerReferenceFinder\Handler\TypeDefinitionHandler;
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\Extension\ReferenceFinder\ReferenceFinderExtension;
@@ -25,10 +26,17 @@ class LanguageServerReferenceFinderExtension implements Extension
             );
         }, [ LanguageServerExtension::TAG_SESSION_HANDLER => [] ]);
 
-        $container->register('worse_language_server.handler.goto_type', function (Container $container) {
+        $container->register(TypeDefinitionHandler::class, function (Container $container) {
             return new TypeDefinitionHandler(
                 $container->get(LanguageServerExtension::SERVICE_SESSION_WORKSPACE),
                 $container->get(ReferenceFinderExtension::SERVICE_TYPE_LOCATOR)
+            );
+        }, [ LanguageServerExtension::TAG_SESSION_HANDLER => [] ]);
+
+        $container->register(GotoImplementationHandler::class, function (Container $container) {
+            return new GotoImplementationHandler(
+                $container->get(LanguageServerExtension::SERVICE_SESSION_WORKSPACE),
+                $container->get(ReferenceFinderExtension::SERVICE_IMPLEMENTATION_FINDER)
             );
         }, [ LanguageServerExtension::TAG_SESSION_HANDLER => [] ]);
     }
