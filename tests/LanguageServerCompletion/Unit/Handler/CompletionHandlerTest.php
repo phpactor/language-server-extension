@@ -58,9 +58,10 @@ class CompletionHandlerTest extends TestCase
         );
         $this->assertInstanceOf(CompletionList::class, $response->result);
         $this->assertEquals([], $response->result->items);
+        $this->assertFalse($response->result->isIncomplete);
     }
 
-    public function testHandleSuggestions()
+    public function testHandleACompleteListOfSuggestions()
     {
         $tester = $this->create([
             Suggestion::create('hello'),
@@ -78,6 +79,28 @@ class CompletionHandlerTest extends TestCase
             self::completionItem('hello', null),
             self::completionItem('goodbye', null),
         ], $response->result->items);
+        $this->assertFalse($response->result->isIncomplete);
+    }
+
+    public function testHandleAnIncompleteListOfSuggestions()
+    {
+        $tester = $this->create([
+            Suggestion::create('hello'),
+            Suggestion::create('goodbye'),
+        ], true, true);
+        $response = $tester->dispatchAndWait(
+            'textDocument/completion',
+            [
+                'textDocument' => $this->document,
+                'position' => $this->position
+            ]
+        );
+        $this->assertInstanceOf(CompletionList::class, $response->result);
+        $this->assertEquals([
+            self::completionItem('hello', null),
+            self::completionItem('goodbye', null),
+        ], $response->result->items);
+        $this->assertTrue($response->result->isIncomplete);
     }
 
     public function testHandleSuggestionsWithRange()
@@ -98,6 +121,7 @@ class CompletionHandlerTest extends TestCase
                 'hello'
             )])
         ], $response->result->items);
+        $this->assertFalse($response->result->isIncomplete);
     }
 
     public function testCancelReturnsPartialResults()
@@ -123,6 +147,7 @@ class CompletionHandlerTest extends TestCase
         ]));
 
         $this->assertGreaterThan(1, count($responses[0]->result->items));
+        $this->assertTrue($responses[0]->result->isIncomplete);
     }
 
     public function testHandleSuggestionsWithSnippets()
@@ -152,6 +177,7 @@ class CompletionHandlerTest extends TestCase
             self::completionItem('goodbye', 2, ['insertText' => 'goodbye()', 'insertTextFormat' => 2]),
             self::completionItem('var', 6),
         ], $response->result->items);
+        $this->assertFalse($response->result->isIncomplete);
     }
 
     public function testHandleSuggestionsWithSnippetsWhenClientDoesNotSupportIt()
@@ -181,6 +207,7 @@ class CompletionHandlerTest extends TestCase
             self::completionItem('goodbye', 2),
             self::completionItem('var', 6),
         ], $response->result->items);
+        $this->assertFalse($response->result->isIncomplete);
     }
 
     private static function completionItem(
@@ -198,9 +225,12 @@ class CompletionHandlerTest extends TestCase
         ], $data));
     }
 
-    private function create(array $suggestions, bool $supportSnippets = true): HandlerTester
-    {
-        $completor = $this->createCompletor($suggestions);
+    private function create(
+        array $suggestions,
+        bool $supportSnippets = true,
+        bool $isIncomplete = false
+    ): HandlerTester {
+        $completor = $this->createCompletor($suggestions, $isIncomplete);
         $registry = new TypedCompletorRegistry([
             'php' => $completor,
         ]);
@@ -213,13 +243,15 @@ class CompletionHandlerTest extends TestCase
         ));
     }
 
-    private function createCompletor(array $suggestions): Completor
+    private function createCompletor(array $suggestions, bool $isIncomplete = false): Completor
     {
-        return new class($suggestions) implements Completor {
+        return new class($suggestions, $isIncomplete) implements Completor {
             private $suggestions;
-            public function __construct(array $suggestions)
+            private $isIncomplete;
+            public function __construct(array $suggestions, bool $isIncomplete)
             {
                 $this->suggestions = $suggestions;
+                $this->isIncomplete = $isIncomplete;
             }
 
             public function complete(TextDocument $source, ByteOffset $offset): Generator
@@ -230,6 +262,8 @@ class CompletionHandlerTest extends TestCase
                     // simulate work
                     usleep(100);
                 }
+
+                return !$this->isIncomplete;
             }
         };
     }

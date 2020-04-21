@@ -95,7 +95,7 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
             );
 
             $completionList = new CompletionList();
-            $completionList->isIncomplete = true;
+            $completionList->isIncomplete = false;
 
             foreach ($suggestions as $suggestion) {
                 $name = $this->suggestionNameFormatter->format($suggestion);
@@ -128,10 +128,13 @@ class CompletionHandler implements Handler, CanRegisterCapabilities
                 try {
                     $token->throwIfRequested();
                 } catch (CancelledException $cancellation) {
+                    $completionList->isIncomplete = true;
                     break;
                 }
                 yield new Delayed(0);
             }
+
+            $completionList->isIncomplete = $completionList->isIncomplete || !$suggestions->getReturn();
 
             return $completionList;
         });
