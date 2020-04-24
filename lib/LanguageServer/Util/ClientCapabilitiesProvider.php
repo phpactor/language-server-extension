@@ -4,9 +4,8 @@ namespace Phpactor\Extension\LanguageServer\Util;
 
 use InvalidArgumentException;
 use Phpactor\Extension\LanguageServer\Helper\ArrayHelper;
-use Psr\Container\ContainerInterface;
 
-final class ClientCapabilitiesProvider implements ContainerInterface
+final class ClientCapabilitiesProvider
 {
     public const COMPLETION_SUPPORT_SNIPPET = 'textDocument.completion.completionItem.snippetSupport';
 
@@ -20,18 +19,15 @@ final class ClientCapabilitiesProvider implements ContainerInterface
         $this->capabilities = ArrayHelper::flatten($capabilities);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function has($id)
+    public function has(string $id): bool
     {
         return isset($this->capabilities[$id]);
     }
 
     /**
-     * {@inheritDoc}
+     * @return mixed
      */
-    public function get($id)
+    public function get(string $id)
     {
         if (!$this->has($id)) {
             throw new InvalidArgumentException(\sprintf(
