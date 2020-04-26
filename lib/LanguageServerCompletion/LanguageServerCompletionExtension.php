@@ -35,7 +35,6 @@ class LanguageServerCompletionExtension implements Extension
     public function load(ContainerBuilder $container)
     {
         $this->registerHandlers($container);
-        $this->registerFormatter($container);
     }
 
     private function registerHandlers(ContainerBuilder $container): void

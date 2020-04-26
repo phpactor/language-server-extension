@@ -33,19 +33,23 @@ class MarkdownObjectRendererTest extends IntegrationTestCase
 
     protected function setUp(): void
     {
+        $this->workspace()->reset();
+        $this->workspace()->mkdir('project');
         $this->locator = new StubSourceLocator(ReflectorBuilder::create()->build(), $this->workspace()->path('project'), $this->workspace()->path('cache'));
         $this->reflector = ReflectorBuilder::create()
             ->addLocator($this->locator)
+            ->enableContextualSourceLocation()
             ->build();
         $this->renderer = ObjectRendererBuilder::create()
              ->addTemplatePath(__DIR__ .'/../../../templates/markdown')
+             ->enableInterfaceCandidates()
              ->build();
     }
 
     /**
      * @dataProvider provideRender
      */
-    public function testRender(string $manifest, Closure $objectFactory, string $expected): void
+    public function testRender(string $manifest, Closure $objectFactory, string $expected, bool $capture = false): void
     {
         $this->workspace()->loadManifest($manifest);
 
@@ -60,6 +64,12 @@ class MarkdownObjectRendererTest extends IntegrationTestCase
 
         $actual = $this->renderer->render($object);
 
+        if ($capture) {
+            fwrite(STDOUT, sprintf("\nCaptured %s\n", $path));
+            file_put_contents($path, $actual);
+        }
+
+
         self::assertEquals(file_get_contents($path), $actual);
     }
 
@@ -68,12 +78,44 @@ class MarkdownObjectRendererTest extends IntegrationTestCase
      */
     public function provideRender(): Generator
     {
-        yield [
+        yield 'simple object' => [
             '',
             function (Reflector $reflector) {
                 return $reflector->reflectClassesIn('<?php class Foobar {}')->first();
             },
             'class_reflection1.md'
+        ];
+
+        yield 'complex object' => [
+            '',
+            function (Reflector $reflector) {
+                return $reflector->reflectClassesIn(<<<'EOT'
+<?php
+
+interface DoesThis
+{
+}
+interface DoesThat
+{
+}
+abstract class SomeAbstract
+{
+}
+
+/**
+ * This is my class, my there are many like it, but this one is mine.
+ */
+class Concrete extends SomeAbstract implements DoesThis, DoesThat
+{
+    public function __construct(string $foo) {}
+    public function foobar(): SomeAbstract;
+}
+EOT
+            )->get('Concrete');
+
+            },
+            'class_reflection2.md',
+            //true
         ];
     }
 }

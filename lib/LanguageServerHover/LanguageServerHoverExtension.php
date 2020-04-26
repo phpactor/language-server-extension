@@ -40,6 +40,7 @@ class LanguageServerHoverExtension implements Extension
             return ObjectRendererBuilder::create()
                 ->setLogger($container->get(LoggingExtension::SERVICE_LOGGER))
                 ->addTemplatePath(__DIR__ . '/../../templates/markdown')
+                ->enableInterfaceCandidates()
                 ->build();
         });
     }

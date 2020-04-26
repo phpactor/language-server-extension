@@ -4,6 +4,8 @@ namespace Phpactor\Extension\LanguageServerHover\Handler;
 
 use Amp\Promise;
 use LanguageServerProtocol\Hover;
+use LanguageServerProtocol\MarkedString;
+use LanguageServerProtocol\MarkupContent;
 use LanguageServerProtocol\Position;
 use LanguageServerProtocol\Range;
 use LanguageServerProtocol\ServerCapabilities;
@@ -70,8 +72,9 @@ class HoverHandler implements Handler, CanRegisterCapabilities
 
             $symbolContext = $offsetReflection->symbolContext();
             $info = $this->resolveInfo($symbolContext);
+            $string = new MarkupContent('markdown', $info);
 
-            return new Hover($info, new Range(
+            return new Hover($string, new Range(
                 OffsetHelper::offsetToPosition($document->__toString(), $symbolContext->symbol()->position()->start()),
                 OffsetHelper::offsetToPosition($document->__toString(), $symbolContext->symbol()->position()->end())
             ));

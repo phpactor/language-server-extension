@@ -1,0 +1,3 @@
+{{- object.visibility}} function {{ object.name }}({{ render(object.parameters) }})
+{%- if object.inferredTypes.count %}: {{ render(object.inferredTypes) }}{% endif -%}
+
