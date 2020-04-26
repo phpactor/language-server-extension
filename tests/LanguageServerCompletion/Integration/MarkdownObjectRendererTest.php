@@ -57,9 +57,7 @@ class MarkdownObjectRendererTest extends IntegrationTestCase
         $path = __DIR__ . '/expected/'. $expected;
 
         if (!file_exists($path)) {
-            throw new RuntimeException(sprintf(
-                'Expected template does not exist at "%s"', $path
-            ));
+            file_put_contents($path, '');
         }
 
         $actual = $this->renderer->render($object);
@@ -115,7 +113,33 @@ EOT
 
             },
             'class_reflection2.md',
-            //true
+        ];
+
+        yield 'complex interface' => [
+            '',
+            function (Reflector $reflector) {
+                return $reflector->reflectClassesIn(<<<'EOT'
+<?php
+
+interface DoesThis
+{
+}
+interface DoesThat
+{
+}
+
+/**
+ * Hello documentation
+ */
+interface AwesomeInterface extends DoesThis, DoesThat
+{
+    public function foo(): string;
+}
+EOT
+            )->get('AwesomeInterface');
+
+            },
+            'interface_reflection1.md',
         ];
     }
 }

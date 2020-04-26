@@ -1,18 +1,8 @@
-__{{ object.name.full }}__
-
-{% if object.docblock.isDefined %}
-{{ object.docblock.formatted }}
-
-{% endif %}
-```php
-<?php class {{ object.name.short }}{% if object.parent %} extends {{ object.parent.name.short }}{% endif -%}
+class {{ object.name.short }}{% if object.parent %} extends {{ object.parent.name.short }}{% endif -%}
 {% if object.interfaces.count %} implements {% for interface in object.interfaces -%}
     {{ interface.name.short }}{% if not loop.last %}, {% endif %}
-    {%- endfor %}
+    {%- endfor %}{% endif %}
 
 {% for method in object.methods.byVisibilities(["public"]) -%}
 {{ '    ' ~ render(method) }}
 {% endfor -%}
-{%- endif %}
-
-```

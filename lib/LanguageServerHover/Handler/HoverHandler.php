@@ -12,6 +12,7 @@ use LanguageServerProtocol\ServerCapabilities;
 use LanguageServerProtocol\TextDocumentIdentifier;
 use Phpactor\Completion\Core\Exception\CouldNotFormat;
 use Phpactor\Completion\Core\Formatter\ObjectFormatter;
+use Phpactor\Extension\LanguageServerHover\Renderer\HoverInformation;
 use Phpactor\Extension\LanguageServer\Helper\OffsetHelper;
 use Phpactor\LanguageServer\Core\Handler\CanRegisterCapabilities;
 use Phpactor\LanguageServer\Core\Handler\Handler;
@@ -84,6 +85,7 @@ class HoverHandler implements Handler, CanRegisterCapabilities
     public function registerCapabiltiies(ServerCapabilities $capabilities): void
     {
         $capabilities->hoverProvider = true;
+
     }
 
     private function messageFromSymbolContext(SymbolContext $symbolContext): ?string
@@ -122,6 +124,7 @@ class HoverHandler implements Handler, CanRegisterCapabilities
         try {
             $class = $this->reflector->reflectClassLike((string) $container);
             $member = null;
+            $sep = '#';
 
             // note that all class-likes (classes, traits and interfaces) have
             // methods but not all have constants or properties, so we play safe
@@ -131,18 +134,21 @@ class HoverHandler implements Handler, CanRegisterCapabilities
             switch ($symbolType) {
                 case Symbol::METHOD:
                     $member = $class->methods()->get($name);
+                    $sep = '#';
                     break;
                 case Symbol::CONSTANT:
+                    $sep = '::';
                     $member = $class->members()->get($name);
                     break;
                 case Symbol::PROPERTY:
+                    $sep = '$';
                     $member = $class->members()->get($name);
                     break;
                 default:
                     return sprintf('Unknown symbol type "%s"', $symbolType);
             }
 
-            return $this->prependDocumentation($member->docblock(), $this->renderer->render($member));
+            return $this->renderer->render(new HoverInformation((string)$container.' '.$sep.' '.(string)$member->name(), $member->docblock()->formatted(), $member));
         } catch (NotFound $e) {
             return $e->getMessage();
         }
@@ -153,7 +159,7 @@ class HoverHandler implements Handler, CanRegisterCapabilities
         $name = $symbolContext->symbol()->name();
         $function = $this->reflector->reflectFunction($name);
 
-        return $this->prependDocumentation($function->docblock(), $this->renderer->render($function));
+        return $this->renderer->render(new HoverInformation($name, $function->docblock()->formatted(), $function));
     }
 
     private function renderVariable(SymbolContext $symbolContext): string
@@ -165,7 +171,7 @@ class HoverHandler implements Handler, CanRegisterCapabilities
     {
         try {
             $class = $this->reflector->reflectClassLike((string) $type);
-            return $this->prependDocumentation($class->docblock(), $this->renderer->render($class));
+            return $this->renderer->render(new HoverInformation((string)$type, $class->docblock()->formatted(), $class));
         } catch (NotFound $e) {
             return $e->getMessage();
         }
@@ -180,19 +186,5 @@ class HoverHandler implements Handler, CanRegisterCapabilities
             $symbolContext->symbol()->name()
         );
         return $info;
-    }
-
-    private function prependDocumentation(DocBlock $docBlock, string $info): string
-    {
-        if (!$docBlock->isDefined()) {
-            return $info;
-        }
-
-        $documentation = trim($docBlock->formatted());
-        if (empty($documentation)) {
-            return $info;
-        }
-
-        return $info . "\n" . str_repeat('-', mb_strlen($info)) . "\n\n" . $documentation;
     }
 }
