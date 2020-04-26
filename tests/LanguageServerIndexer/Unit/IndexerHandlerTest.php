@@ -7,6 +7,7 @@ use Phpactor\AmpFsWatch\ModifiedFile;
 use Phpactor\AmpFsWatch\ModifiedFileQueue;
 use Phpactor\AmpFsWatch\Watcher\TestWatcher\TestWatcher;
 use Phpactor\Extension\LanguageServerIndexer\Handler\IndexerHandler;
+use Phpactor\Indexer\Model\IndexBuilder;
 use Phpactor\Indexer\Model\Indexer;
 use Phpactor\LanguageServer\Core\Server\Transmitter\NullMessageTransmitter;
 use Phpactor\LanguageServer\Core\Service\ServiceManager;
@@ -42,10 +43,11 @@ EOT
         );
         \Amp\Promise\wait(\Amp\call(function () {
             $indexer = $this->container()->get(Indexer::class);
+            $indexBuilder = $this->container()->get(IndexBuilder::class);
             $watcher = new TestWatcher(new ModifiedFileQueue([
                 new ModifiedFile($this->workspace()->path('Foobar.php'), ModifiedFile::TYPE_FILE),
             ]));
-            $handler = new IndexerHandler($indexer, $watcher, $this->logger->reveal());
+            $handler = new IndexerHandler($indexer, $indexBuilder, $watcher, $this->logger->reveal());
             $token = (new CancellationTokenSource())->getToken();
             yield $handler->indexer(new NullMessageTransmitter(), $token);
         }));
@@ -59,9 +61,10 @@ EOT
     public function testReindexNonStarted(): void
     {
         $indexer = $this->container()->get(Indexer::class);
+        $indexBuilder = $this->container()->get(IndexBuilder::class);
         $watcher = new TestWatcher(new ModifiedFileQueue());
         $handlerTester = new HandlerTester(
-            new IndexerHandler($indexer, $watcher, $this->logger->reveal())
+            new IndexerHandler($indexer, $indexBuilder, $watcher, $this->logger->reveal())
         );
 
         self::assertFalse($handlerTester->serviceManager()->isRunning(IndexerHandler::SERVICE_INDEXER));
@@ -74,15 +77,16 @@ EOT
     public function testReindexHard(): void
     {
         $indexer = $this->container()->get(Indexer::class);
+        $indexBuilder = $this->container()->get(IndexBuilder::class);
         $watcher = new TestWatcher(new ModifiedFileQueue());
         $handlerTester = new HandlerTester(
-            new IndexerHandler($indexer, $watcher, $this->logger->reveal())
+            new IndexerHandler($indexer, $indexBuilder, $watcher, $this->logger->reveal())
         );
 
         $handlerTester->serviceManager()->start(IndexerHandler::SERVICE_INDEXER);
 
         $handlerTester->dispatchAndWait('indexer/reindex', [
-            'hard' => true,
+            'soft' => false,
         ]);
 
         self::assertTrue($handlerTester->serviceManager()->isRunning(IndexerHandler::SERVICE_INDEXER));

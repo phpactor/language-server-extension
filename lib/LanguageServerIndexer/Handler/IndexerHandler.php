@@ -8,7 +8,6 @@ use Amp\Delayed;
 use Amp\Promise;
 use Amp\Success;
 use LanguageServerProtocol\MessageType;
-use Phpactor\AmpFsWatch\ModifiedFile;
 use Phpactor\AmpFsWatch\Watcher;
 use Phpactor\Indexer\Model\IndexBuilder;
 use Phpactor\LanguageServer\Core\Handler\ServiceProvider;
@@ -127,14 +126,14 @@ class IndexerHandler implements ServiceProvider
         });
     }
 
-    public function reindex(ServiceManager $serviceManager, bool $hard = false): Promise
+    public function reindex(ServiceManager $serviceManager, bool $soft = false): Promise
     {
-        return \Amp\call(function () use ($serviceManager, $hard) {
+        return \Amp\call(function () use ($serviceManager, $soft) {
             if ($serviceManager->isRunning(self::SERVICE_INDEXER)) {
                 $serviceManager->stop(self::SERVICE_INDEXER);
             }
 
-            if ($hard) {
+            if (false === $soft) {
                 $this->indexer->reset();
             }
 
