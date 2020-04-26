@@ -10,12 +10,14 @@ use Amp\Success;
 use LanguageServerProtocol\MessageType;
 use Phpactor\AmpFsWatch\ModifiedFile;
 use Phpactor\AmpFsWatch\Watcher;
+use Phpactor\Indexer\Model\IndexBuilder;
 use Phpactor\LanguageServer\Core\Handler\ServiceProvider;
 use Phpactor\LanguageServer\Core\Rpc\NotificationMessage;
 use Phpactor\LanguageServer\Core\Server\Transmitter\MessageTransmitter;
 use Phpactor\Indexer\Model\Indexer;
 use Phpactor\LanguageServer\Core\Service\ServiceManager;
 use Psr\Log\LoggerInterface;
+use SplFileInfo;
 
 class IndexerHandler implements ServiceProvider
 {
@@ -36,14 +38,21 @@ class IndexerHandler implements ServiceProvider
      */
     private $logger;
 
+    /**
+     * @var IndexBuilder
+     */
+    private $indexBuilder;
+
     public function __construct(
         Indexer $indexer,
+        IndexBuilder $indexBuilder,
         Watcher $watcher,
         LoggerInterface $logger
     ) {
         $this->indexer = $indexer;
         $this->watcher = $watcher;
         $this->logger = $logger;
+        $this->indexBuilder = $indexBuilder;
     }
 
     /**
@@ -108,13 +117,10 @@ class IndexerHandler implements ServiceProvider
                 } catch (CancelledException $cancelled) {
                     break;
                 }
-                assert($file instanceof ModifiedFile);
-                $job = $this->indexer->getJob($file->path());
 
-                foreach ($job->generator() as $file) {
-                    $this->logger->debug(sprintf('Indexed file: %s', $file));
-                    yield new Delayed(1);
-                }
+                $this->indexBuilder->index(new SplFileInfo($file->path()));
+                $this->logger->debug(sprintf('Indexed file: %s', $file->path()));
+                yield new Delayed(0);
             }
 
             return new Success();
