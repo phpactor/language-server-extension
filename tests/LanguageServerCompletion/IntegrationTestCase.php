@@ -17,9 +17,15 @@ use Phpactor\Extension\WorseReflection\WorseReflectionExtension;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
 use Phpactor\LanguageServer\LanguageServerBuilder;
 use Phpactor\LanguageServer\Test\ServerTester;
+use Phpactor\TestUtils\Workspace;
 
 class IntegrationTestCase extends TestCase
 {
+    protected function workspace(): Workspace
+    {
+        return Workspace::create(__DIR__ . '/Workspace');
+    }
+
     protected function createTester(): ServerTester
     {
         $container = PhpactorContainer::fromExtensions([

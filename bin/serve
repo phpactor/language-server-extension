@@ -11,10 +11,12 @@ use Phpactor\Extension\Completion\CompletionExtension;
 use Phpactor\Extension\ComposerAutoloader\ComposerAutoloaderExtension;
 use Phpactor\Extension\Console\ConsoleExtension;
 use Phpactor\Extension\LanguageServerCompletion\LanguageServerCompletionExtension;
+use Phpactor\Extension\LanguageServerHover\LanguageServerHoverExtension;
 use Phpactor\Extension\LanguageServerIndexer\LanguageServerIndexerExtension;
 use Phpactor\Extension\LanguageServerReferenceFinder\LanguageServerReferenceFinderExtension;
 use Phpactor\Extension\LanguageServerWorseReflection\LanguageServerWorseReflectionExtension;
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
+use Phpactor\Extension\Logger\Formatter\PrettyFormatter;
 use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\ReferenceFinder\ReferenceFinderExtension;
 use Phpactor\Extension\SourceCodeFilesystem\SourceCodeFilesystemExtension;
@@ -32,6 +34,7 @@ $container = PhpactorContainer::fromExtensions([
     LanguageServerReferenceFinderExtension::class,
     LanguageServerWorseReflectionExtension::class,
     LanguageServerIndexerExtension::class,
+    LanguageServerHoverExtension::class,
     CompletionExtension::class,
     WorseReflectionExtension::class,
     ClassToFileExtension::class,
@@ -43,9 +46,12 @@ $container = PhpactorContainer::fromExtensions([
     FilePathResolverExtension::PARAM_PROJECT_ROOT => realpath(__DIR__ . '/..'),
     FilePathResolverExtension::PARAM_APPLICATION_ROOT => realpath(__DIR__ .'/..'),
     IndexerExtension::PARAM_INDEX_PATH => realpath(__DIR__ . '/..') . '/cache',
+    LoggingExtension::PARAM_FORMATTER => 'pretty',
 ]);
 
-$container->get(LoggingExtension::SERVICE_LOGGER)->pushHandler(new StreamHandler(STDERR));
+$handler = new StreamHandler(STDERR);
+$handler->setFormatter($container->get(PrettyFormatter::class));
+$container->get(LoggingExtension::SERVICE_LOGGER)->pushHandler($handler);
 
 $application = new Application();
 $application->setCommandLoader(

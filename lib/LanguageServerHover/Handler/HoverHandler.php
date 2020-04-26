@@ -1,6 +1,6 @@
 <?php
 
-namespace Phpactor\Extension\LanguageServerCompletion\Handler;
+namespace Phpactor\Extension\LanguageServerHover\Handler;
 
 use Amp\Promise;
 use LanguageServerProtocol\Hover;
@@ -14,6 +14,7 @@ use Phpactor\Extension\LanguageServer\Helper\OffsetHelper;
 use Phpactor\LanguageServer\Core\Handler\CanRegisterCapabilities;
 use Phpactor\LanguageServer\Core\Handler\Handler;
 use Phpactor\LanguageServer\Core\Session\Workspace;
+use Phpactor\ObjectRenderer\Model\ObjectRenderer;
 use Phpactor\TextDocument\TextDocumentBuilder;
 use Phpactor\WorseReflection\Core\DocBlock\DocBlock;
 use Phpactor\WorseReflection\Core\Exception\NotFound;
@@ -30,19 +31,19 @@ class HoverHandler implements Handler, CanRegisterCapabilities
     private $reflector;
 
     /**
-     * @var ObjectFormatter
+     * @var ObjectRenderer
      */
-    private $formatter;
+    private $renderer;
 
     /**
      * @var Workspace
      */
     private $workspace;
 
-    public function __construct(Workspace $workspace, Reflector $reflector, ObjectFormatter $formatter)
+    public function __construct(Workspace $workspace, Reflector $reflector, ObjectRenderer $renderer)
     {
         $this->reflector = $reflector;
-        $this->formatter = $formatter;
+        $this->renderer = $renderer;
         $this->workspace = $workspace;
     }
 
@@ -138,7 +139,7 @@ class HoverHandler implements Handler, CanRegisterCapabilities
                     return sprintf('Unknown symbol type "%s"', $symbolType);
             }
 
-            return $this->prependDocumentation($member->docblock(), $this->formatter->format($member));
+            return $this->prependDocumentation($member->docblock(), $this->renderer->render($member));
         } catch (NotFound $e) {
             return $e->getMessage();
         }
@@ -149,19 +150,19 @@ class HoverHandler implements Handler, CanRegisterCapabilities
         $name = $symbolContext->symbol()->name();
         $function = $this->reflector->reflectFunction($name);
 
-        return $this->prependDocumentation($function->docblock(), $this->formatter->format($function));
+        return $this->prependDocumentation($function->docblock(), $this->renderer->render($function));
     }
 
     private function renderVariable(SymbolContext $symbolContext): string
     {
-        return $this->formatter->format($symbolContext->types());
+        return $this->renderer->render($symbolContext->types());
     }
 
     private function renderClass(Type $type): string
     {
         try {
             $class = $this->reflector->reflectClassLike((string) $type);
-            return $this->prependDocumentation($class->docblock(), $this->formatter->format($class));
+            return $this->prependDocumentation($class->docblock(), $this->renderer->render($class));
         } catch (NotFound $e) {
             return $e->getMessage();
         }
