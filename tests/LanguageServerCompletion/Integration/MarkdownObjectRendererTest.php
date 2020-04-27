@@ -7,12 +7,10 @@ use Generator;
 use Phpactor\Extension\LanguageServerCompletion\Tests\IntegrationTestCase;
 use Phpactor\ObjectRenderer\Model\ObjectRenderer;
 use Phpactor\ObjectRenderer\ObjectRendererBuilder;
-use Phpactor\TestUtils\ExtractOffset;
 use Phpactor\WorseReflection\Core\SourceCodeLocator\StubSourceLocator;
 use Phpactor\WorseReflection\Core\SourceCodeLocator\TemporarySourceLocator;
 use Phpactor\WorseReflection\Reflector;
 use Phpactor\WorseReflection\ReflectorBuilder;
-use RuntimeException;
 
 class MarkdownObjectRendererTest extends IntegrationTestCase
 {
@@ -87,7 +85,8 @@ class MarkdownObjectRendererTest extends IntegrationTestCase
         yield 'complex object' => [
             '',
             function (Reflector $reflector) {
-                return $reflector->reflectClassesIn(<<<'EOT'
+                return $reflector->reflectClassesIn(
+                    <<<'EOT'
 <?php
 
 interface DoesThis
@@ -109,8 +108,7 @@ class Concrete extends SomeAbstract implements DoesThis, DoesThat
     public function foobar(): SomeAbstract;
 }
 EOT
-            )->get('Concrete');
-
+                )->get('Concrete');
             },
             'class_reflection2.md',
         ];
@@ -118,7 +116,8 @@ EOT
         yield 'complex interface' => [
             '',
             function (Reflector $reflector) {
-                return $reflector->reflectClassesIn(<<<'EOT'
+                return $reflector->reflectClassesIn(
+                    <<<'EOT'
 <?php
 
 interface DoesThis
@@ -136,8 +135,7 @@ interface AwesomeInterface extends DoesThis, DoesThat
     public function foo(): string;
 }
 EOT
-            )->get('AwesomeInterface');
-
+                )->get('AwesomeInterface');
             },
             'interface_reflection1.md',
         ];

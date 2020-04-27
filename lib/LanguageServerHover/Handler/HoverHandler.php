@@ -4,14 +4,12 @@ namespace Phpactor\Extension\LanguageServerHover\Handler;
 
 use Amp\Promise;
 use LanguageServerProtocol\Hover;
-use LanguageServerProtocol\MarkedString;
 use LanguageServerProtocol\MarkupContent;
 use LanguageServerProtocol\Position;
 use LanguageServerProtocol\Range;
 use LanguageServerProtocol\ServerCapabilities;
 use LanguageServerProtocol\TextDocumentIdentifier;
 use Phpactor\Completion\Core\Exception\CouldNotFormat;
-use Phpactor\Completion\Core\Formatter\ObjectFormatter;
 use Phpactor\Extension\LanguageServerHover\Renderer\HoverInformation;
 use Phpactor\Extension\LanguageServer\Helper\OffsetHelper;
 use Phpactor\LanguageServer\Core\Handler\CanRegisterCapabilities;
@@ -19,7 +17,6 @@ use Phpactor\LanguageServer\Core\Handler\Handler;
 use Phpactor\LanguageServer\Core\Session\Workspace;
 use Phpactor\ObjectRenderer\Model\ObjectRenderer;
 use Phpactor\TextDocument\TextDocumentBuilder;
-use Phpactor\WorseReflection\Core\DocBlock\DocBlock;
 use Phpactor\WorseReflection\Core\Exception\NotFound;
 use Phpactor\WorseReflection\Core\Inference\Symbol;
 use Phpactor\WorseReflection\Core\Inference\SymbolContext;
@@ -75,6 +72,7 @@ class HoverHandler implements Handler, CanRegisterCapabilities
             $info = $this->resolveInfo($symbolContext);
             $string = new MarkupContent('markdown', $info);
 
+            // @phpstan-ignore-next-line
             return new Hover($string, new Range(
                 OffsetHelper::offsetToPosition($document->__toString(), $symbolContext->symbol()->position()->start()),
                 OffsetHelper::offsetToPosition($document->__toString(), $symbolContext->symbol()->position()->end())
@@ -85,7 +83,6 @@ class HoverHandler implements Handler, CanRegisterCapabilities
     public function registerCapabiltiies(ServerCapabilities $capabilities): void
     {
         $capabilities->hoverProvider = true;
-
     }
 
     private function messageFromSymbolContext(SymbolContext $symbolContext): ?string

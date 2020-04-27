@@ -1,2 +1,2 @@
 interface AwesomeInterface extends DoesThis, DoesThat
-    public function foo(): string 
+    public function foo(): string
