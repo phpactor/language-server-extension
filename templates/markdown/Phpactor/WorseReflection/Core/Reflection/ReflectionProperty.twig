@@ -1,3 +1,2 @@
-{{- object.visibility}}{%- if object.inferredTypes.count %} {{ render(object.inferredTypes) }}{% endif -%} ${{ object.name }}
-
-
+{% if object.isVirtual %}[virtual] {% endif -%}
+{{- object.visibility}}{%- if object.inferredTypes.count %} {{ render(object.inferredTypes) }}{% endif %} ${{ object.name ~ ';' -}}

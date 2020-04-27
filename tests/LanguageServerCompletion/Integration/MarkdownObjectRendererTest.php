@@ -7,6 +7,7 @@ use Generator;
 use Phpactor\Extension\LanguageServerCompletion\Tests\IntegrationTestCase;
 use Phpactor\ObjectRenderer\Model\ObjectRenderer;
 use Phpactor\ObjectRenderer\ObjectRendererBuilder;
+use Phpactor\WorseReflection\Bridge\Phpactor\MemberProvider\DocblockMemberProvider;
 use Phpactor\WorseReflection\Core\SourceCodeLocator\StubSourceLocator;
 use Phpactor\WorseReflection\Core\SourceCodeLocator\TemporarySourceLocator;
 use Phpactor\WorseReflection\Reflector;
@@ -36,6 +37,7 @@ class MarkdownObjectRendererTest extends IntegrationTestCase
         $this->locator = new StubSourceLocator(ReflectorBuilder::create()->build(), $this->workspace()->path('project'), $this->workspace()->path('cache'));
         $this->reflector = ReflectorBuilder::create()
             ->addLocator($this->locator)
+            ->addMemberProvider(new DocblockMemberProvider())
             ->enableContextualSourceLocation()
             ->build();
         $this->renderer = ObjectRendererBuilder::create()
@@ -45,7 +47,11 @@ class MarkdownObjectRendererTest extends IntegrationTestCase
     }
 
     /**
-     * @dataProvider provideRender
+     * @dataProvider provideClass
+     * @dataProvider provideInterface
+     * @dataProvider provideMethod
+     * @dataProvider provideProperty
+     * @dataProvider provideConstant
      */
     public function testRender(string $manifest, Closure $objectFactory, string $expected, bool $capture = false): void
     {
@@ -61,7 +67,7 @@ class MarkdownObjectRendererTest extends IntegrationTestCase
         $actual = $this->renderer->render($object);
 
         if ($capture) {
-            fwrite(STDOUT, sprintf("\nCaptured %s\n", $path));
+            fwrite(STDOUT, sprintf("\nCaptured %s\n\n>>> START\n%s\n<<< END", $path, $actual));
             file_put_contents($path, $actual);
         }
 
@@ -72,7 +78,7 @@ class MarkdownObjectRendererTest extends IntegrationTestCase
     /**
      * @return Generator<array>
      */
-    public function provideRender(): Generator
+    public function provideClass(): Generator
     {
         yield 'simple object' => [
             '',
@@ -115,7 +121,13 @@ EOT
             },
             'class_reflection2.md',
         ];
+    }
 
+    /**
+     * @return Generator<array>
+     */
+    public function provideInterface()
+    {
         yield 'complex interface' => [
             '',
             function (Reflector $reflector) {
@@ -141,6 +153,227 @@ EOT
                 )->get('AwesomeInterface');
             },
             'interface_reflection1.md',
+        ];
+    }
+
+    /**
+     * @return Generator<array>
+     */
+    public function provideMethod()
+    {
+        yield 'simple' => [
+            '',
+            function (Reflector $reflector) {
+                return $reflector->reflectClassesIn(
+                    <<<'EOT'
+<?php
+
+/**
+ * Hello documentation
+ */
+class OneClass
+{
+    public function foo();
+}
+EOT
+                )->first()->methods()->get('foo');
+            },
+            'method1.md',
+        ];
+
+        yield 'complex method' => [
+            '',
+            function (Reflector $reflector) {
+                return $reflector->reflectClassesIn(
+                    <<<'EOT'
+<?php
+
+class OneClass
+{
+    /**
+     * This is my method
+     *
+     * @param bool|string $foo
+     * @param Foobar[] $zed
+     */
+    public function foo(string $bar, $foo, array $zed): void;
+}
+EOT
+                )->first()->methods()->get('foo');
+            },
+            'method2.md',
+        ];
+
+        yield 'private method' => [
+            '',
+            function (Reflector $reflector) {
+                return $reflector->reflectClassesIn(
+                    <<<'EOT'
+<?php
+
+class OneClass
+{
+    private function foo(): void;
+}
+EOT
+                )->first()->methods()->get('foo');
+            },
+            'method3.md',
+        ];
+
+        yield 'static and abstract method' => [
+            '',
+            function (Reflector $reflector) {
+                return $reflector->reflectClassesIn(
+                    <<<'EOT'
+<?php
+
+class OneClass
+{
+    abstract public static function foo()
+}
+EOT
+                )->first()->methods()->get('foo');
+            },
+            'method4.md',
+        ];
+
+        yield 'virtual method' => [
+            '',
+            function (Reflector $reflector) {
+                return $reflector->reflectClassesIn(
+                    <<<'EOT'
+<?php
+
+/**
+ * @method string foobar()
+ */
+class OneClass
+{
+}
+EOT
+                )->first()->methods()->get('foobar');
+            },
+            'method5.md',
+        ];
+    }
+
+    /**
+     * @return Generator<array>
+     */
+    public function provideProperty()
+    {
+        yield 'simple property' => [
+            '',
+            function (Reflector $reflector) {
+                return $reflector->reflectClassesIn(
+                    <<<'EOT'
+<?php
+
+class OneClass
+{
+    public $foobar;
+}
+EOT
+                )->first()->properties()->get('foobar');
+            },
+            'property1.md',
+        ];
+
+        yield 'complex property' => [
+            '',
+            function (Reflector $reflector) {
+                return $reflector->reflectClassesIn(
+                    <<<'EOT'
+<?php
+
+class OneClass
+{
+    /**
+     * @var Foobar|string
+     */
+    public $foobar = "bar";
+}
+EOT
+                )->first()->properties()->get('foobar');
+            },
+            'property2.md',
+        ];
+
+        yield 'typed property' => [
+            '',
+            function (Reflector $reflector) {
+                return $reflector->reflectClassesIn(
+                    <<<'EOT'
+<?php
+
+class OneClass
+{
+    public string $foobar = "bar";
+}
+EOT
+                )->first()->properties()->get('foobar');
+            },
+            'property3.md',
+        ];
+
+        yield 'virtual property' => [
+            '',
+            function (Reflector $reflector) {
+                return $reflector->reflectClassesIn(
+                    <<<'EOT'
+<?php
+
+/**
+ * @property string $foobar
+ */
+class OneClass
+{
+}
+EOT
+                )->first()->properties()->get('foobar');
+            },
+            'property4.md',
+        ];
+    }
+
+    /**
+     * @return Generator<array>
+     */
+    public function provideConstant()
+    {
+        yield 'simple constant' => [
+            '',
+            function (Reflector $reflector) {
+                return $reflector->reflectClassesIn(
+                    <<<'EOT'
+<?php
+
+class OneClass
+{
+    const FOOBAR = "barfoo";
+}
+EOT
+                )->first()->constants()->get('FOOBAR');
+            },
+            'constant1.md',
+        ];
+
+        yield 'complex constant' => [
+            '',
+            function (Reflector $reflector) {
+                return $reflector->reflectClassesIn(
+                    <<<'EOT'
+<?php
+
+class OneClass
+{
+    private const FOOBAR = ['one', 2];
+}
+EOT
+                )->first()->constants()->get('FOOBAR');
+            },
+            'constant2.md',
         ];
     }
 }
