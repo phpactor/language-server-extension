@@ -52,6 +52,8 @@ class MarkdownObjectRendererTest extends IntegrationTestCase
      * @dataProvider provideMethod
      * @dataProvider provideProperty
      * @dataProvider provideConstant
+     * @dataProvider provideTrait
+     * @dataProvider provideFunction
      */
     public function testRender(string $manifest, Closure $objectFactory, string $expected, bool $capture = false): void
     {
@@ -153,6 +155,29 @@ EOT
                 )->get('AwesomeInterface');
             },
             'interface_reflection1.md',
+        ];
+    }
+
+    /**
+     * @return Generator<array>
+     */
+    public function provideTrait()
+    {
+        yield 'simple trait' => [
+            '',
+            function (Reflector $reflector) {
+                return $reflector->reflectClassesIn(
+                    <<<'EOT'
+<?php
+
+trait Blah
+{
+    public function foo();
+}
+EOT
+                )->get('Blah');
+            },
+            'trait1.md',
         ];
     }
 
@@ -374,6 +399,38 @@ EOT
                 )->first()->constants()->get('FOOBAR');
             },
             'constant2.md',
+        ];
+    }
+
+    /**
+     * @return Generator<array>
+     */
+    public function provideFunction()
+    {
+        yield 'simple function' => [
+            '',
+            function (Reflector $reflector) {
+                return $reflector->reflectFunctionsIn(
+                    <<<'EOT'
+<?php
+function one() {}
+EOT
+                )->first();
+            },
+            'function1.md',
+        ];
+
+        yield 'complex function' => [
+            '',
+            function (Reflector $reflector) {
+                return $reflector->reflectFunctionsIn(
+                    <<<'EOT'
+<?php
+function one(string $bar, bool $baz): stdClass {}
+EOT
+                )->first();
+            },
+            'function2.md',
         ];
     }
 }
