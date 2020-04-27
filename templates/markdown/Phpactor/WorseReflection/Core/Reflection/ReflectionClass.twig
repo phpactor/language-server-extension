@@ -3,6 +3,12 @@ class {{ object.name.short }}{% if object.parent %} extends {{ object.parent.nam
     {{ interface.name.short }}{% if not loop.last %}, {% endif %}
     {%- endfor %}{% endif %}
 
-{% for method in object.methods.byVisibilities(["public"]) -%}
-{{ '    ' ~ render(method) }}
+{% for member in object.methods.byVisibilities(["public"]) -%}
+{{ '    ' ~ render(member) }}
+{% endfor -%}
+{% for member in object.constants.byVisibilities(["public"]) -%}
+{{ '    ' ~ render(member) }}
+{% endfor -%}
+{% for member in object.properties.byVisibilities(["public"]) -%}
+{{ '    ' ~ render(member) }}
 {% endfor -%}

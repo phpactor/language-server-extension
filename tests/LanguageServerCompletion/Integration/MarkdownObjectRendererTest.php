@@ -82,7 +82,7 @@ class MarkdownObjectRendererTest extends IntegrationTestCase
      */
     public function provideClass(): Generator
     {
-        yield 'simple object' => [
+        yield 'simple class' => [
             '',
             function (Reflector $reflector) {
                 return $reflector->reflectClassesIn('<?php class Foobar {}')->first();
@@ -90,7 +90,7 @@ class MarkdownObjectRendererTest extends IntegrationTestCase
             'class_reflection1.md'
         ];
 
-        yield 'complex object' => [
+        yield 'complex class' => [
             '',
             function (Reflector $reflector) {
                 return $reflector->reflectClassesIn(
@@ -107,9 +107,6 @@ abstract class SomeAbstract
 {
 }
 
-/**
- * This is my class, my there are many like it, but this one is mine.
- */
 class Concrete extends SomeAbstract implements DoesThis, DoesThat
 {
     public function __construct(string $foo) {}
@@ -122,6 +119,27 @@ EOT
                 )->get('Concrete');
             },
             'class_reflection2.md',
+        ];
+
+        yield 'class with constants and properties' => [
+            '',
+            function (Reflector $reflector) {
+                return $reflector->reflectClassesIn(
+                    <<<'EOT'
+<?php
+
+class SomeClass
+{
+    public const FOOBAR = 'bar';
+    private const NO= 'none';
+    public $foo = 'zed';
+    public function foobar(): void {}
+}
+EOT
+                )->get('SomeClass');
+            },
+            'class_reflection3.md',
+            true
         ];
     }
 
