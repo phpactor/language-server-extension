@@ -69,7 +69,7 @@ class HoverHandler implements Handler, CanRegisterCapabilities
 
             $offsetReflection = $this->reflector->reflectOffset($document, $offset);
             $symbolContext = $offsetReflection->symbolContext();
-            $info = $this->resolveInfo($offsetReflection);
+            $info = $this->infoFromReflecionOffset($offsetReflection);
             $string = new MarkupContent('markdown', $info);
 
             // @phpstan-ignore-next-line
@@ -85,7 +85,18 @@ class HoverHandler implements Handler, CanRegisterCapabilities
         $capabilities->hoverProvider = true;
     }
 
-    private function messageFromSymbolContext(SymbolContext $symbolContext): ?string
+    private function infoFromReflecionOffset(ReflectionOffset $offset): string
+    {
+        $symbolContext = $offset->symbolContext();
+
+        if ($info = $this->infoFromSymbolContext($symbolContext)) {
+            return $info;
+        }
+
+        return $this->renderer->render($offset);
+    }
+
+    private function infoFromSymbolContext(SymbolContext $symbolContext): ?string
     {
         try {
             return $this->renderSymbolContext($symbolContext);
@@ -165,16 +176,5 @@ class HoverHandler implements Handler, CanRegisterCapabilities
         } catch (NotFound $e) {
             return $e->getMessage();
         }
-    }
-
-    private function resolveInfo(ReflectionOffset $offset): string
-    {
-        $symbolContext = $offset->symbolContext();
-
-        if ($info = $this->messageFromSymbolContext($symbolContext)) {
-            return $info;
-        }
-
-        return $this->renderer->render($offset);
     }
 }

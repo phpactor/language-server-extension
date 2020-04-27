@@ -465,7 +465,9 @@ EOT
                     <<<'EOT'
 <?php
 EOT
-                ,1);
+                ,
+                    1
+                );
             },
             'offset1.md',
         ];

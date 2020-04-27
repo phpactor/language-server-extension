@@ -3,7 +3,6 @@
 namespace Phpactor\Extension\LanguageServerHover\Tests\Unit\Handler;
 
 use LanguageServerProtocol\Hover;
-use LanguageServerProtocol\MarkupContent;
 use LanguageServerProtocol\TextDocumentIdentifier;
 use LanguageServerProtocol\TextDocumentItem;
 use Phpactor\Extension\LanguageServerCompletion\Tests\IntegrationTestCase;
@@ -17,7 +16,7 @@ class HoverHandlerTest extends IntegrationTestCase
     /**
      * @dataProvider provideHover
      */
-    public function testHover(string $test, string $expected)
+    public function testHover(string $test)
     {
         [ $text, $offset ] = ExtractOffset::fromSource($test);
 
@@ -32,14 +31,39 @@ class HoverHandlerTest extends IntegrationTestCase
         $tester->assertSuccess($response);
         $result = $response->result;
         $this->assertInstanceOf(Hover::class, $result);
-        $this->assertEquals(new MarkupContent('markdown', $expected), $result->contents);
     }
 
     public function provideHover()
     {
         yield 'var' => [
             '<?php $foo = "foo"; $f<>oo;',
-            'string'
+        ];
+
+        yield 'poperty' => [
+            '<?php class A { private $<>b; }',
+        ];
+
+        yield 'method' => [
+            '<?php class A { private function f<>oo():string {} }',
+        ];
+
+        yield 'method with documentation' => [
+            <<<'EOT'
+<?php 
+
+class A { 
+    /** 
+     * This is a method 
+     */
+    private function f<>oo():string {} 
+}
+EOT
+            ,
+        ];
+
+        yield 'class' => [
+            '<?php cl<>ass A { } }',
+            'A'
         ];
     }
 }
