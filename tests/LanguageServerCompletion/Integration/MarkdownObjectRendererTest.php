@@ -5,6 +5,7 @@ namespace Phpactor\Extension\LanguageServerCompletion\Tests\Integration;
 use Closure;
 use Generator;
 use Phpactor\Extension\LanguageServerCompletion\Tests\IntegrationTestCase;
+use Phpactor\Extension\LanguageServerHover\Renderer\HoverInformation;
 use Phpactor\ObjectRenderer\Model\ObjectRenderer;
 use Phpactor\ObjectRenderer\ObjectRendererBuilder;
 use Phpactor\TestUtils\ExtractOffset;
@@ -48,6 +49,7 @@ class MarkdownObjectRendererTest extends IntegrationTestCase
     }
 
     /**
+     * @dataProvider provideHoverInformation
      * @dataProvider provideClass
      * @dataProvider provideInterface
      * @dataProvider provideMethod
@@ -77,6 +79,44 @@ class MarkdownObjectRendererTest extends IntegrationTestCase
 
 
         self::assertEquals(file_get_contents($path), $actual);
+    }
+
+    /**
+     * @return Generator<array>
+     */
+    public function provideHoverInformation(): Generator
+    {
+        yield 'empty' => [
+            '',
+            function (Reflector $reflector) {
+                return new HoverInformation('', '', $reflector->reflectClassesIn('<?php class Foobar {}')->first());
+            },
+            'hover_information1.md',
+        ];
+
+        yield 'title no docs' => [
+            '',
+            function (Reflector $reflector) {
+                return new HoverInformation('This is my title', '', $reflector->reflectClassesIn('<?php class Foobar {}')->first());
+            },
+            'hover_information2.md',
+        ];
+
+        yield 'title with docs' => [
+            '',
+            function (Reflector $reflector) {
+                return new HoverInformation('This is my title', 'There are my docs', $reflector->reflectClassesIn('<?php class Foobar {}')->first());
+            },
+            'hover_information3.md',
+        ];
+
+        yield 'docs with HTML tags' => [
+            '',
+            function (Reflector $reflector) {
+                return new HoverInformation('This is my title', '<p>There are my docs</p>', $reflector->reflectClassesIn('<?php class Foobar {}')->first());
+            },
+            'hover_information3.md',
+        ];
     }
 
     /**
