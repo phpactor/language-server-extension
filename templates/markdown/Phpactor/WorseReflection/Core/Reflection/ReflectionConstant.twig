@@ -1,0 +1,2 @@
+{{- object.visibility ~ ' ' -}} 
+const {{ object.name }}{% if object.value %} = {{ object.value|json_encode }}{% endif %}{{ ';' -}}

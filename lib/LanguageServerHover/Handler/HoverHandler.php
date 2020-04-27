@@ -1,24 +1,26 @@
 <?php
 
-namespace Phpactor\Extension\LanguageServerCompletion\Handler;
+namespace Phpactor\Extension\LanguageServerHover\Handler;
 
 use Amp\Promise;
 use LanguageServerProtocol\Hover;
+use LanguageServerProtocol\MarkupContent;
 use LanguageServerProtocol\Position;
 use LanguageServerProtocol\Range;
 use LanguageServerProtocol\ServerCapabilities;
 use LanguageServerProtocol\TextDocumentIdentifier;
 use Phpactor\Completion\Core\Exception\CouldNotFormat;
-use Phpactor\Completion\Core\Formatter\ObjectFormatter;
+use Phpactor\Extension\LanguageServerHover\Renderer\HoverInformation;
 use Phpactor\Extension\LanguageServer\Helper\OffsetHelper;
 use Phpactor\LanguageServer\Core\Handler\CanRegisterCapabilities;
 use Phpactor\LanguageServer\Core\Handler\Handler;
 use Phpactor\LanguageServer\Core\Session\Workspace;
+use Phpactor\ObjectRenderer\Model\ObjectRenderer;
 use Phpactor\TextDocument\TextDocumentBuilder;
-use Phpactor\WorseReflection\Core\DocBlock\DocBlock;
 use Phpactor\WorseReflection\Core\Exception\NotFound;
 use Phpactor\WorseReflection\Core\Inference\Symbol;
 use Phpactor\WorseReflection\Core\Inference\SymbolContext;
+use Phpactor\WorseReflection\Core\Reflection\ReflectionOffset;
 use Phpactor\WorseReflection\Core\Type;
 use Phpactor\WorseReflection\Reflector;
 
@@ -30,19 +32,19 @@ class HoverHandler implements Handler, CanRegisterCapabilities
     private $reflector;
 
     /**
-     * @var ObjectFormatter
+     * @var ObjectRenderer
      */
-    private $formatter;
+    private $renderer;
 
     /**
      * @var Workspace
      */
     private $workspace;
 
-    public function __construct(Workspace $workspace, Reflector $reflector, ObjectFormatter $formatter)
+    public function __construct(Workspace $workspace, Reflector $reflector, ObjectRenderer $renderer)
     {
         $this->reflector = $reflector;
-        $this->formatter = $formatter;
+        $this->renderer = $renderer;
         $this->workspace = $workspace;
     }
 
@@ -66,11 +68,12 @@ class HoverHandler implements Handler, CanRegisterCapabilities
                 ->build();
 
             $offsetReflection = $this->reflector->reflectOffset($document, $offset);
-
             $symbolContext = $offsetReflection->symbolContext();
-            $info = $this->resolveInfo($symbolContext);
+            $info = $this->infoFromReflecionOffset($offsetReflection);
+            $string = new MarkupContent('markdown', $info);
 
-            return new Hover($info, new Range(
+            // @phpstan-ignore-next-line
+            return new Hover($string, new Range(
                 OffsetHelper::offsetToPosition($document->__toString(), $symbolContext->symbol()->position()->start()),
                 OffsetHelper::offsetToPosition($document->__toString(), $symbolContext->symbol()->position()->end())
             ));
@@ -82,7 +85,18 @@ class HoverHandler implements Handler, CanRegisterCapabilities
         $capabilities->hoverProvider = true;
     }
 
-    private function messageFromSymbolContext(SymbolContext $symbolContext): ?string
+    private function infoFromReflecionOffset(ReflectionOffset $offset): string
+    {
+        $symbolContext = $offset->symbolContext();
+
+        if ($info = $this->infoFromSymbolContext($symbolContext)) {
+            return $info;
+        }
+
+        return $this->renderer->render($offset);
+    }
+
+    private function infoFromSymbolContext(SymbolContext $symbolContext): ?string
     {
         try {
             return $this->renderSymbolContext($symbolContext);
@@ -103,8 +117,6 @@ class HoverHandler implements Handler, CanRegisterCapabilities
                 return $this->renderClass($symbolContext->type());
             case Symbol::FUNCTION:
                 return $this->renderFunction($symbolContext);
-            case Symbol::VARIABLE:
-                return $this->renderVariable($symbolContext);
         }
 
         return null;
@@ -118,6 +130,7 @@ class HoverHandler implements Handler, CanRegisterCapabilities
         try {
             $class = $this->reflector->reflectClassLike((string) $container);
             $member = null;
+            $sep = '#';
 
             // note that all class-likes (classes, traits and interfaces) have
             // methods but not all have constants or properties, so we play safe
@@ -127,18 +140,21 @@ class HoverHandler implements Handler, CanRegisterCapabilities
             switch ($symbolType) {
                 case Symbol::METHOD:
                     $member = $class->methods()->get($name);
+                    $sep = '#';
                     break;
                 case Symbol::CONSTANT:
+                    $sep = '::';
                     $member = $class->members()->get($name);
                     break;
                 case Symbol::PROPERTY:
+                    $sep = '$';
                     $member = $class->members()->get($name);
                     break;
                 default:
                     return sprintf('Unknown symbol type "%s"', $symbolType);
             }
 
-            return $this->prependDocumentation($member->docblock(), $this->formatter->format($member));
+            return $this->renderer->render(new HoverInformation((string)$container.' '.$sep.' '.(string)$member->name(), $member->docblock()->formatted(), $member));
         } catch (NotFound $e) {
             return $e->getMessage();
         }
@@ -149,46 +165,16 @@ class HoverHandler implements Handler, CanRegisterCapabilities
         $name = $symbolContext->symbol()->name();
         $function = $this->reflector->reflectFunction($name);
 
-        return $this->prependDocumentation($function->docblock(), $this->formatter->format($function));
-    }
-
-    private function renderVariable(SymbolContext $symbolContext): string
-    {
-        return $this->formatter->format($symbolContext->types());
+        return $this->renderer->render(new HoverInformation($name, $function->docblock()->formatted(), $function));
     }
 
     private function renderClass(Type $type): string
     {
         try {
             $class = $this->reflector->reflectClassLike((string) $type);
-            return $this->prependDocumentation($class->docblock(), $this->formatter->format($class));
+            return $this->renderer->render(new HoverInformation((string)$type, $class->docblock()->formatted(), $class));
         } catch (NotFound $e) {
             return $e->getMessage();
         }
-    }
-
-    private function resolveInfo(SymbolContext $symbolContext): string
-    {
-        $info = $this->messageFromSymbolContext($symbolContext);
-        $info = $info ?: sprintf(
-            '%s %s',
-            $symbolContext->symbol()->symbolType(),
-            $symbolContext->symbol()->name()
-        );
-        return $info;
-    }
-
-    private function prependDocumentation(DocBlock $docBlock, string $info): string
-    {
-        if (!$docBlock->isDefined()) {
-            return $info;
-        }
-
-        $documentation = trim($docBlock->formatted());
-        if (empty($documentation)) {
-            return $info;
-        }
-
-        return $info . "\n" . str_repeat('-', mb_strlen($info)) . "\n\n" . $documentation;
     }
 }

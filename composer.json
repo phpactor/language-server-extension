@@ -17,7 +17,7 @@
         "phpactor/container": "~1.3",
         "phpactor/language-server": "~0.3",
         "phpactor/console-extension": "~0.1",
-        "phpactor/logging-extension": "~0.3",
+        "phpactor/logging-extension": "~0.3.3",
         "phpactor/file-path-resolver-extension": "~0.2",
         "phpactor/text-document": "^1.1",
         "phpactor/completion-extension": "~0.2.2",
@@ -27,7 +27,8 @@
         "phpactor/reference-finder-extension": "~0.1.4",
         "phpactor/code-transform": "^0.2.1",
         "phpactor/indexer-extension": "^0.1.5",
-        "phly/phly-event-dispatcher": "^1.0"
+        "phly/phly-event-dispatcher": "^1.0",
+        "dantleech/object-renderer": "^0.1.0@dev"
     },
     "require-dev": {
         "phpspec/prophecy-phpunit": "^2.0",
