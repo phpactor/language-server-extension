@@ -105,7 +105,10 @@ abstract class SomeAbstract
 class Concrete extends SomeAbstract implements DoesThis, DoesThat
 {
     public function __construct(string $foo) {}
-    public function foobar(): SomeAbstract;
+    /**
+     * @param string|bool|null $bar
+     */
+    public function foobar(string $foo, $bar): SomeAbstract;
 }
 EOT
                 )->get('Concrete');
