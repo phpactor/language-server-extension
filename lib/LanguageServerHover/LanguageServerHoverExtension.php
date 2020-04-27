@@ -41,6 +41,7 @@ class LanguageServerHoverExtension implements Extension
                 ->setLogger($container->get(LoggingExtension::SERVICE_LOGGER))
                 ->addTemplatePath(__DIR__ . '/../../templates/markdown')
                 ->enableInterfaceCandidates()
+                ->renderEmptyOnNotFound()
                 ->build();
         });
     }
