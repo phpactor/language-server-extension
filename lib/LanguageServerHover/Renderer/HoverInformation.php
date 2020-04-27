@@ -26,7 +26,7 @@ class HoverInformation
 
     public function docs(): string
     {
-        return $this->docs;
+        return trim(strip_tags($this->docs));
     }
 
     public function name(): string

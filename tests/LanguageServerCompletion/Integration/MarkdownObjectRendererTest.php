@@ -7,6 +7,7 @@ use Generator;
 use Phpactor\Extension\LanguageServerCompletion\Tests\IntegrationTestCase;
 use Phpactor\ObjectRenderer\Model\ObjectRenderer;
 use Phpactor\ObjectRenderer\ObjectRendererBuilder;
+use Phpactor\TestUtils\ExtractOffset;
 use Phpactor\WorseReflection\Bridge\Phpactor\MemberProvider\DocblockMemberProvider;
 use Phpactor\WorseReflection\Core\SourceCodeLocator\StubSourceLocator;
 use Phpactor\WorseReflection\Core\SourceCodeLocator\TemporarySourceLocator;
@@ -54,6 +55,7 @@ class MarkdownObjectRendererTest extends IntegrationTestCase
      * @dataProvider provideConstant
      * @dataProvider provideTrait
      * @dataProvider provideFunction
+     * @dataProvider provideSymbolOffset
      */
     public function testRender(string $manifest, Closure $objectFactory, string $expected, bool $capture = false): void
     {
@@ -139,7 +141,6 @@ EOT
                 )->get('SomeClass');
             },
             'class_reflection3.md',
-            true
         ];
     }
 
@@ -449,6 +450,43 @@ EOT
                 )->first();
             },
             'function2.md',
+        ];
+    }
+
+    /**
+     * @return Generator<array>
+     */
+    public function provideSymbolOffset()
+    {
+        yield 'whitespace' => [
+            '',
+            function (Reflector $reflector) {
+                return $reflector->reflectOffset(
+                    <<<'EOT'
+<?php
+EOT
+                ,1);
+            },
+            'offset1.md',
+        ];
+
+        yield 'var with local vars' => [
+            '',
+            function (Reflector $reflector) {
+                $source = <<<'EOT'
+<?php
+
+$foo = 'string';
+$bar = 1234;
+
+$<>zed;
+
+EOT
+                ;
+                [$source, $offset] = ExtractOffset::fromSource($source);
+                return $reflector->reflectOffset($source, $offset);
+            },
+            'offset2.md',
         ];
     }
 }

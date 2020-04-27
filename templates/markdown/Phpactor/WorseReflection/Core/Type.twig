@@ -1,6 +1,8 @@
 {%- if object.nullable %}?{% endif -%}
 {%- if not object.arrayType.isDefined -%}
     {{ object.short }}
+{%- elseif not object.isDefined -%}
+    <not defined>
 {%- else -%}
     {%- if object.isClass %}
         {{- object.short }}<{{ object.arrayType.short }}> 

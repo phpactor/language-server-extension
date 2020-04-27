@@ -20,6 +20,7 @@ use Phpactor\TextDocument\TextDocumentBuilder;
 use Phpactor\WorseReflection\Core\Exception\NotFound;
 use Phpactor\WorseReflection\Core\Inference\Symbol;
 use Phpactor\WorseReflection\Core\Inference\SymbolContext;
+use Phpactor\WorseReflection\Core\Reflection\ReflectionOffset;
 use Phpactor\WorseReflection\Core\Type;
 use Phpactor\WorseReflection\Reflector;
 
@@ -67,9 +68,8 @@ class HoverHandler implements Handler, CanRegisterCapabilities
                 ->build();
 
             $offsetReflection = $this->reflector->reflectOffset($document, $offset);
-
             $symbolContext = $offsetReflection->symbolContext();
-            $info = $this->resolveInfo($symbolContext);
+            $info = $this->resolveInfo($offsetReflection);
             $string = new MarkupContent('markdown', $info);
 
             // @phpstan-ignore-next-line
@@ -106,8 +106,6 @@ class HoverHandler implements Handler, CanRegisterCapabilities
                 return $this->renderClass($symbolContext->type());
             case Symbol::FUNCTION:
                 return $this->renderFunction($symbolContext);
-            case Symbol::VARIABLE:
-                return $this->renderVariable($symbolContext);
         }
 
         return null;
@@ -159,11 +157,6 @@ class HoverHandler implements Handler, CanRegisterCapabilities
         return $this->renderer->render(new HoverInformation($name, $function->docblock()->formatted(), $function));
     }
 
-    private function renderVariable(SymbolContext $symbolContext): string
-    {
-        return $this->renderer->render($symbolContext->types());
-    }
-
     private function renderClass(Type $type): string
     {
         try {
@@ -174,14 +167,14 @@ class HoverHandler implements Handler, CanRegisterCapabilities
         }
     }
 
-    private function resolveInfo(SymbolContext $symbolContext): string
+    private function resolveInfo(ReflectionOffset $offset): string
     {
-        $info = $this->messageFromSymbolContext($symbolContext);
-        $info = $info ?: sprintf(
-            '%s %s',
-            $symbolContext->symbol()->symbolType(),
-            $symbolContext->symbol()->name()
-        );
-        return $info;
+        $symbolContext = $offset->symbolContext();
+
+        if ($info = $this->messageFromSymbolContext($symbolContext)) {
+            return $info;
+        }
+
+        return $this->renderer->render($offset);
     }
 }
