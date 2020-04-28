@@ -12,6 +12,7 @@ use Phpactor\TestUtils\ExtractOffset;
 use Phpactor\WorseReflection\Bridge\Phpactor\MemberProvider\DocblockMemberProvider;
 use Phpactor\WorseReflection\Core\SourceCodeLocator\StubSourceLocator;
 use Phpactor\WorseReflection\Core\SourceCodeLocator\TemporarySourceLocator;
+use Phpactor\WorseReflection\Core\Type;
 use Phpactor\WorseReflection\Reflector;
 use Phpactor\WorseReflection\ReflectorBuilder;
 
@@ -58,6 +59,7 @@ class MarkdownObjectRendererTest extends IntegrationTestCase
      * @dataProvider provideTrait
      * @dataProvider provideFunction
      * @dataProvider provideSymbolOffset
+     * @dataProvider provideType
      */
     public function testRender(string $manifest, Closure $objectFactory, string $expected, bool $capture = false): void
     {
@@ -419,6 +421,27 @@ EOT
             },
             'property4.md',
         ];
+
+        yield 'null property' => [
+            '',
+            function (Reflector $reflector) {
+                return $reflector->reflectClassesIn(
+                    <<<'EOT'
+<?php
+
+class OneClass
+{
+    /**
+     * @var mixed|foo
+     */
+    public $foobar;
+}
+EOT
+                )->first()->properties()->get('foobar');
+            },
+            'property5.md',
+            true
+        ];
     }
 
     /**
@@ -529,6 +552,21 @@ EOT
                 return $reflector->reflectOffset($source, $offset);
             },
             'offset2.md',
+        ];
+    }
+
+    /**
+     * @return Generator<array>
+     */
+    public function provideType()
+    {
+        yield 'mixed' => [
+            '',
+            function (Reflector $reflector) {
+                return Type::mixed();
+            },
+            'type1.md',
+            true
         ];
     }
 }

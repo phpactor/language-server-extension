@@ -84,6 +84,7 @@ class IndexerHandler implements ServiceProvider
             $size = $job->size();
             $this->showMessage($transmitter, sprintf('Indexing "%s" PHP files', $size));
 
+            $start = microtime(true);
             $index = 0;
             foreach ($job->generator() as $file) {
                 $index++;
@@ -106,7 +107,10 @@ class IndexerHandler implements ServiceProvider
                 yield new Delayed(1);
             }
 
-            $this->showMessage($transmitter, 'Index initialized, watching.');
+            $this->showMessage($transmitter, sprintf(
+                'Done indexing (%ss), watching.',
+                number_format(microtime(true) - $start, 2)
+            ));
 
             $process = yield $this->watcher->watch();
 

@@ -9,7 +9,7 @@ use Phpactor\AmpFsWatch\Watcher\TestWatcher\TestWatcher;
 use Phpactor\Extension\LanguageServerIndexer\Handler\IndexerHandler;
 use Phpactor\Indexer\Model\IndexBuilder;
 use Phpactor\Indexer\Model\Indexer;
-use Phpactor\LanguageServer\Core\Server\Transmitter\NullMessageTransmitter;
+use Phpactor\LanguageServer\Core\Server\Transmitter\TestMessageTransmitter;
 use Phpactor\LanguageServer\Core\Service\ServiceManager;
 use Phpactor\LanguageServer\Test\HandlerTester;
 use Psr\Log\LoggerInterface;
@@ -41,7 +41,8 @@ class IndexerHandlerTest extends IntegrationTestCase
 <?php
 EOT
         );
-        \Amp\Promise\wait(\Amp\call(function () {
+        $transmitter = new TestMessageTransmitter();
+        \Amp\Promise\wait(\Amp\call(function () use ($transmitter) {
             $indexer = $this->container()->get(Indexer::class);
             $indexBuilder = $this->container()->get(IndexBuilder::class);
             $watcher = new TestWatcher(new ModifiedFileQueue([
@@ -49,13 +50,16 @@ EOT
             ]));
             $handler = new IndexerHandler($indexer, $indexBuilder, $watcher, $this->logger->reveal());
             $token = (new CancellationTokenSource())->getToken();
-            yield $handler->indexer(new NullMessageTransmitter(), $token);
+            yield $handler->indexer($transmitter, $token);
         }));
 
         $this->logger->debug(sprintf(
             'Indexed file: %s',
             $this->workspace()->path('Foobar.php')
         ))->shouldHaveBeenCalled();
+
+        self::assertStringContainsString('Indexing', $transmitter->shift()->params['message']);
+        self::assertStringContainsString('Done indexing', $transmitter->shift()->params['message']);
     }
 
     public function testReindexNonStarted(): void
