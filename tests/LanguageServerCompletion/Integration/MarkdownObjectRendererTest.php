@@ -210,6 +210,7 @@ interface DoesThat
  */
 interface AwesomeInterface extends DoesThis, DoesThat
 {
+    const FOOBAR = "BARFOO";
     public function foo(): string;
 }
 EOT
@@ -440,7 +441,6 @@ EOT
                 )->first()->properties()->get('foobar');
             },
             'property5.md',
-            true
         ];
     }
 
@@ -566,7 +566,6 @@ EOT
                 return Type::mixed();
             },
             'type1.md',
-            true
         ];
     }
 }
