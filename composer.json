@@ -19,7 +19,8 @@
         "phpactor/console-extension": "~0.1",
         "phpactor/logging-extension": "~0.3.3",
         "phpactor/file-path-resolver-extension": "~0.2",
-        "phpactor/text-document": "^1.1"
+        "phpactor/text-document": "^1.1",
+        "phly/phly-event-dispatcher": "^1.0"
     },
     "require-dev": {
         "phpspec/prophecy-phpunit": "^2.0",
