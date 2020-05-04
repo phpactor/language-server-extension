@@ -1,5 +1,0 @@
-trait {{ object.name.short }}
-{% for method in object.methods.byVisibilities(["public"]) -%}
-{{ '    ' ~ render(method) }}
-{% endfor -%}
-

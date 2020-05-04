@@ -30,22 +30,9 @@ $container = PhpactorContainer::fromExtensions([
     LanguageServerExtension::class,
     LoggingExtension::class,
     FilePathResolverExtension::class,
-    LanguageServerCompletionExtension::class,
-    LanguageServerReferenceFinderExtension::class,
-    LanguageServerWorseReflectionExtension::class,
-    LanguageServerIndexerExtension::class,
-    LanguageServerHoverExtension::class,
-    CompletionExtension::class,
-    WorseReflectionExtension::class,
-    ClassToFileExtension::class,
-    ComposerAutoloaderExtension::class,
-    ReferenceFinderExtension::class,
-    IndexerExtension::class,
-    SourceCodeFilesystemExtension::class,
 ], [
     FilePathResolverExtension::PARAM_PROJECT_ROOT => realpath(__DIR__ . '/..'),
     FilePathResolverExtension::PARAM_APPLICATION_ROOT => realpath(__DIR__ .'/..'),
-    IndexerExtension::PARAM_INDEX_PATH => realpath(__DIR__ . '/..') . '/cache',
     LoggingExtension::PARAM_FORMATTER => 'pretty',
 ]);
 

@@ -1,1 +1,0 @@
-public |foo $foobar;

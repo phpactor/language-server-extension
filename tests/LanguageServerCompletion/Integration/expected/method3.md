@@ -1,1 +1,0 @@
-private function foo(): void

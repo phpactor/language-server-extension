@@ -1,6 +1,0 @@
-`${{ object.name -}}`
-{{- ' ' }}{{ '__' ~ render(object.symbolContext.types) ~ '__'  -}}
-{%- if object.symbolContext.value is not null -%}
-    {{- ' = ' }}{{ object.symbolContext.value|json_encode -}}
-{% endif %}
-{{ ' ' }}_[{{ render(object.symbolContext.symbol.position) }}{{ ']' -}}{{ '_' -}}

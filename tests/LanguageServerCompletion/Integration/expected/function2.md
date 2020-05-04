@@ -1,1 +1,0 @@
-function one(string $bar, bool $baz): stdClass

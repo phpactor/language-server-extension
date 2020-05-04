@@ -1,6 +1,0 @@
-``
-
-```php
-<?php class Foobar
-
-```
