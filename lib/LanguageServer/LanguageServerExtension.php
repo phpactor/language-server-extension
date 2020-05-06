@@ -13,6 +13,7 @@ use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\Console\ConsoleExtension;
 use Phpactor\Extension\LanguageServer\Command\StartCommand;
 use Phpactor\LanguageServer\Core\Session\Workspace;
+use Phpactor\LanguageServer\Core\Session\WorkspaceListener;
 use Phpactor\LanguageServer\Handler\System\ServiceHandler;
 use Phpactor\LanguageServer\Handler\TextDocument\TextDocumentHandler;
 use Phpactor\LanguageServer\LanguageServerBuilder;
@@ -23,14 +24,13 @@ class LanguageServerExtension implements Extension
 {
     const SERVICE_LANGUAGE_SERVER_BUILDER = 'language_server.builder';
     const SERVICE_EVENT_EMITTER = 'language_server.event_emitter';
-
     const TAG_SESSION_HANDLER = 'language_server.session_handler';
     const TAG_LISTENER_PROVIDER = 'language_server.listener_provider';
-
-    const PARAM_WELCOME_MESSAGE = 'language_server.welcome_message';
     const SERVICE_SESSION_WORKSPACE = 'language_server.session.workspace';
 
     const PARAM_CLIENT_CAPABILITIES = 'language_server.client_capabilities';
+    const PARAM_WELCOME_MESSAGE = 'language_server.welcome_message';
+    const PARAM_ENABLE_WORKPACE = 'language_server.enable_workspace';
 
     /**
      * {@inheritDoc}
@@ -40,6 +40,7 @@ class LanguageServerExtension implements Extension
         $schema->setDefaults([
             self::PARAM_WELCOME_MESSAGE => 'Welcome to a Phpactor Language Server',
             self::PARAM_CLIENT_CAPABILITIES => [],
+            self::PARAM_ENABLE_WORKPACE => true,
         ]);
     }
 
@@ -87,13 +88,22 @@ class LanguageServerExtension implements Extension
     {
         $container->register(self::SERVICE_SESSION_WORKSPACE, function (Container $container) {
             return new Workspace(
-                $container->get(EventDispatcherInterface::class),
                 $container->get(LoggingExtension::SERVICE_LOGGER)
             );
         });
 
+        $container->register(WorkspaceListener::class, function (Container $container) {
+            if ($container->getParameter(self::PARAM_ENABLE_WORKPACE) === false) {
+                return null;
+            }
+
+            return new WorkspaceListener($container->get(self::SERVICE_SESSION_WORKSPACE));
+        }, [
+            self::TAG_LISTENER_PROVIDER => [],
+        ]);
+
         $container->register('language_server.session.handler.text_document', function (Container $container) {
-            return new TextDocumentHandler($container->get(self::SERVICE_SESSION_WORKSPACE));
+            return new TextDocumentHandler($container->get(EventDispatcherInterface::class));
         }, [ self::TAG_SESSION_HANDLER => []]);
 
         $container->register('language_server.session.handler.session', function (Container $container) {
@@ -110,7 +120,15 @@ class LanguageServerExtension implements Extension
         $container->register(EventDispatcherInterface::class, function (Container $container) {
             $aggregate = new ListenerProviderAggregate();
             foreach (array_keys($container->getServiceIdsForTag(self::TAG_LISTENER_PROVIDER)) as $serviceId) {
-                $aggregate->attach($container->get($serviceId));
+                $listener = $container->get($serviceId);
+
+                // if listener is NULL then assume it was conditionally
+                // disabled
+                if (null === $listener) {
+                    continue;
+                }
+
+                $aggregate->attach($listener);
             }
 
             return new EventDispatcher($aggregate);
