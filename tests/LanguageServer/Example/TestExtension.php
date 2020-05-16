@@ -2,6 +2,7 @@
 
 namespace Phpactor\Extension\LanguageServer\Tests\Example;
 
+use Amp\Promise;
 use Amp\Success;
 use LanguageServerProtocol\MessageType;
 use Phpactor\Container\Container;
@@ -38,9 +39,9 @@ class TestExtension implements Extension
 
         $container->register('test.command', function (Container $container) {
             return new class {
-                public function __invoke(string $text): string
+                public function __invoke(string $text): Promise
                 {
-                    return $text;
+                    return new Success($text);
                 }
             };
         }, [
