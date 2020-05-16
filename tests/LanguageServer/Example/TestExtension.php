@@ -37,7 +37,12 @@ class TestExtension implements Extension
         }, [ LanguageServerExtension::TAG_SESSION_HANDLER => []]);
 
         $container->register('test.command', function (Container $container) {
-            return new class { public function __invoke(string $text): string { return $text; }};
+            return new class {
+                public function __invoke(string $text): string
+                {
+                    return $text;
+                }
+            };
         }, [
             LanguageServerExtension::TAG_COMMAND => [
                 'name' => 'echo',

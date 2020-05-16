@@ -144,7 +144,7 @@ class LanguageServerExtension implements Extension
         });
     }
 
-    private function registerCommandDispatcher(ContainerBuilder $container)
+    private function registerCommandDispatcher(ContainerBuilder $container): void
     {
         $container->register(CommandDispatcher::class, function (Container $container) {
             $map = [];
@@ -155,6 +155,7 @@ class LanguageServerExtension implements Extension
                         $serviceId
                     ));
                 }
+                assert(is_string($attrs['name']));
                 $map[$attrs['name']] = $container->get($serviceId);
             }
 
