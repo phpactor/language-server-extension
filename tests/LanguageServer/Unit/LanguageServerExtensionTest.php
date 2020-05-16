@@ -28,6 +28,20 @@ class LanguageServerExtensionTest extends LanguageServerTestCase
         $this->assertTrue($serverTester->assertSuccess($response));
     }
 
+    public function testRegistersCommands(): void
+    {
+        $serverTester = $this->createTester();
+        $serverTester->initialize();
+        $response = $serverTester->dispatchAndWait(1, 'workspace/executeCommand', [
+            'command' => 'echo',
+            'arguments' => [
+                'hello',
+            ],
+        ]);
+        $this->assertTrue($serverTester->assertSuccess($response));
+        $this->assertEquals('hello', $response->result);
+    }
+
     public function testDisablesWorkspaceListener(): void
     {
         // workspace is enabled by default
