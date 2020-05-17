@@ -9,6 +9,7 @@ use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
 use Phpactor\LanguageServer\Core\Handler\HandlerLoader;
 use Phpactor\LanguageServer\Core\Handler\Handlers;
+use Phpactor\LanguageServer\Core\Server\SessionServices;
 use Phpactor\TextDocument\TextDocumentUri;
 
 class PhpactorHandlerLoader implements HandlerLoader
@@ -23,9 +24,9 @@ class PhpactorHandlerLoader implements HandlerLoader
         $this->container = $container;
     }
 
-    public function load(InitializeParams $params): Handlers
+    public function load(InitializeParams $params, SessionServices $sessionServices): Handlers
     {
-        $container = $this->createContainer($params);
+        $container = $this->createContainer($params, $sessionServices);
         $handlers = [];
 
         foreach (array_keys(
@@ -37,7 +38,7 @@ class PhpactorHandlerLoader implements HandlerLoader
         return new Handlers($handlers);
     }
 
-    protected function createContainer(InitializeParams $params): Container
+    protected function createContainer(InitializeParams $params, SessionServices $sessionServices): Container
     {
         $container = $this->container;
         $parameters = $container->getParameters();
