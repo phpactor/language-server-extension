@@ -12,6 +12,7 @@ use Phpactor\Extension\LanguageServer\Handler\SessionHandler;
 use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\Console\ConsoleExtension;
 use Phpactor\Extension\LanguageServer\Command\StartCommand;
+use Phpactor\LanguageServer\Core\Server\ClientApi;
 use Phpactor\LanguageServer\Core\Session\Workspace;
 use Phpactor\LanguageServer\Core\Session\WorkspaceListener;
 use Phpactor\LanguageServer\Handler\System\ServiceHandler;
@@ -112,7 +113,11 @@ class LanguageServerExtension implements Extension
         }, [ self::TAG_SESSION_HANDLER => []]);
 
         $container->register('language_server.session.handler.session', function (Container $container) {
-            return new SessionHandler($container);
+            return new SessionHandler(
+                $container,
+                $container->get(ClientApi::class),
+                $container->get(self::SERVICE_SESSION_WORKSPACE),
+            );
         }, [ self::TAG_SESSION_HANDLER => []]);
 
         $container->register(ServiceHandler::class, function (Container $container) {

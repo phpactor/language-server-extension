@@ -3,17 +3,22 @@
 namespace Phpactor\Extension\LanguageServer\Tests\Unit\Handler;
 
 use Phpactor\Extension\LanguageServer\Tests\Unit\LanguageServerTestCase;
-use Phpactor\LanguageServer\Core\Server\Transmitter\NullMessageTransmitter;
 
 class SessionHandlerTest extends LanguageServerTestCase
 {
-    public function testSessionHandler()
+    public function testDumpConfig()
     {
         $tester = $this->createTester();
         $tester->initialize();
-        $response = $tester->dispatchAndWait(1, 'session/dumpConfig', [
-            '_transmitter' => new NullMessageTransmitter()
-        ]);
+        $response = $tester->dispatchAndWait(1, 'session/dumpConfig');
+        $tester->assertSuccess($response);
+    }
+
+    public function testDumpWorkspace()
+    {
+        $tester = $this->createTester();
+        $tester->initialize();
+        $response = $tester->dispatchAndWait(1, 'session/dumpWorkspace');
         $tester->assertSuccess($response);
     }
 }

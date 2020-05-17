@@ -4,12 +4,12 @@ namespace Phpactor\Extension\LanguageServer\Handler;
 
 use Amp\Promise;
 use Amp\Success;
-use LanguageServerProtocol\MessageType;
+use LanguageServerProtocol\TextDocumentItem;
 use Phpactor\Container\Container;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
 use Phpactor\LanguageServer\Core\Handler\Handler;
-use Phpactor\LanguageServer\Core\Rpc\NotificationMessage;
-use Phpactor\LanguageServer\Core\Server\Transmitter\MessageTransmitter;
+use Phpactor\LanguageServer\Core\Server\ClientApi;
+use Phpactor\LanguageServer\Core\Session\Workspace;
 
 class SessionHandler implements Handler
 {
@@ -18,9 +18,21 @@ class SessionHandler implements Handler
      */
     private $container;
 
-    public function __construct(Container $container)
+    /**
+     * @var ClientApi
+     */
+    private $client;
+
+    /**
+     * @var Workspace
+     */
+    private $workspace;
+
+    public function __construct(Container $container, ClientApi $client, Workspace $workspace)
     {
         $this->container = $container;
+        $this->client = $client;
+        $this->workspace = $workspace;
     }
 
     /**
@@ -29,14 +41,15 @@ class SessionHandler implements Handler
     public function methods(): array
     {
         return [
-            'session/dumpConfig' => 'dumpConfig'
+            'session/dumpConfig' => 'dumpConfig',
+            'session/dumpWorkspace' => 'dumpWorkspace'
         ];
     }
 
     /**
      * @return Promise<null>
      */
-    public function dumpConfig(MessageTransmitter $transmitter): Promise
+    public function dumpConfig(): Promise
     {
         $message = [
             'Config Dump',
@@ -63,10 +76,25 @@ class SessionHandler implements Handler
 
         $message[] = json_encode($this->container->getParameters(), JSON_PRETTY_PRINT);
 
-        $transmitter->transmit(new NotificationMessage('window/logMessage', [
-            'type' => MessageType::INFO,
-            'message' => implode(PHP_EOL, $message),
-        ]));
+        $this->client->window()->logMessage()->info(implode(PHP_EOL, $message));
+
+        return new Success(null);
+    }
+
+    /**
+     * @return Promise<null>
+     */
+    public function dumpWorkspace(): Promise
+    {
+        $info = [];
+        foreach ($this->workspace as $document) {
+            assert($document instanceof TextDocumentItem);
+            $info[] = sprintf('// %s', $document->uri);
+            $info[] = '-----------------';
+            $info[] = $document->text;
+        }
+
+        $this->client->window()->logMessage()->info(implode("\n", $info));
 
         return new Success(null);
     }
