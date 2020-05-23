@@ -28,13 +28,13 @@ class LanguageServerExtension implements Extension
 {
     const SERVICE_LANGUAGE_SERVER_BUILDER = 'language_server.builder';
     const SERVICE_EVENT_EMITTER = 'language_server.event_emitter';
+    const SERVICE_SESSION_WORKSPACE = 'language_server.session.workspace';
+
     const TAG_SESSION_HANDLER = 'language_server.session_handler';
     const TAG_COMMAND = 'language_server.command';
     const TAG_LISTENER_PROVIDER = 'language_server.listener_provider';
-    const SERVICE_SESSION_WORKSPACE = 'language_server.session.workspace';
 
     const PARAM_CLIENT_CAPABILITIES = 'language_server.client_capabilities';
-    const PARAM_WELCOME_MESSAGE = 'language_server.welcome_message';
     const PARAM_ENABLE_WORKPACE = 'language_server.enable_workspace';
 
     /**
@@ -43,9 +43,14 @@ class LanguageServerExtension implements Extension
     public function configure(Resolver $schema)
     {
         $schema->setDefaults([
-            self::PARAM_WELCOME_MESSAGE => 'Welcome to a Phpactor Language Server',
             self::PARAM_CLIENT_CAPABILITIES => [],
             self::PARAM_ENABLE_WORKPACE => true,
+        ]);
+        $schema->setDescriptions([
+            self::PARAM_CLIENT_CAPABILITIES => 'For internal use only: will contain the capabilities of the connected language server client',
+            self::PARAM_ENABLE_WORKPACE => <<<'EOT'
+If workspace management / text synchronization should be enabled (this isn't required for some language server implementations, e.g. static analyzers)
+EOT
         ]);
     }
 

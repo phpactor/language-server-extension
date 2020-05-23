@@ -19,7 +19,7 @@ class LanguageServerSessionExtension implements Extension
      */
     private $services;
 
-    public function __construct(SessionServices $services)
+    public function __construct(SessionServices $services = null)
     {
         $this->services = $services;
     }
