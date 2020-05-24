@@ -29,6 +29,7 @@ class LanguageServerExtension implements Extension
     const SERVICE_LANGUAGE_SERVER_BUILDER = 'language_server.builder';
     const SERVICE_EVENT_EMITTER = 'language_server.event_emitter';
     const SERVICE_SESSION_WORKSPACE = 'language_server.session.workspace';
+    const PARAM_SESSION_PARAMETERS = 'language_server.session_parameters';
 
     const TAG_SESSION_HANDLER = 'language_server.session_handler';
     const TAG_COMMAND = 'language_server.command';
@@ -45,8 +46,10 @@ class LanguageServerExtension implements Extension
         $schema->setDefaults([
             self::PARAM_CLIENT_CAPABILITIES => [],
             self::PARAM_ENABLE_WORKPACE => true,
+            self::PARAM_SESSION_PARAMETERS => [],
         ]);
         $schema->setDescriptions([
+            self::PARAM_SESSION_PARAMETERS => 'Phpactor parameters (config) that apply only to the language server session',
             self::PARAM_CLIENT_CAPABILITIES => 'For internal use only: will contain the capabilities of the connected language server client',
             self::PARAM_ENABLE_WORKPACE => <<<'EOT'
 If workspace management / text synchronization should be enabled (this isn't required for some language server implementations, e.g. static analyzers)

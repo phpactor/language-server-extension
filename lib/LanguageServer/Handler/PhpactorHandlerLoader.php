@@ -52,12 +52,8 @@ class PhpactorHandlerLoader implements HandlerLoader
             PhpactorContainer::PARAM_EXTENSION_CLASSES
         );
 
-        if (in_array('Phpactor\Extension\WorseReflection\WorseReflectionExtension', $extensionClasses)) {
-            // this is necessary for Phpactor RPC (single request process) but
-            // not with the language server (which has up-to-date sources in
-            // the workspace)
-            $parameters['worse_reflection.enable_context_location'] = false;
-        }
+        // merge in any language-server specific configuration
+        $parameters = array_merge($parameters, $container->getParameter(LanguageServerExtension::PARAM_SESSION_PARAMETERS));
 
         $container = $this->buildContainer(
             $extensionClasses,
