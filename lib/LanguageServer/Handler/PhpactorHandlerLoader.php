@@ -10,6 +10,7 @@ use Phpactor\Extension\LanguageServer\LanguageServerSessionExtension;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
 use Phpactor\LanguageServer\Core\Handler\HandlerLoader;
 use Phpactor\LanguageServer\Core\Handler\Handlers;
+use Phpactor\LanguageServer\Core\Server\Exception\ExitSession;
 use Phpactor\LanguageServer\Core\Server\SessionServices;
 use Phpactor\MapResolver\Resolver;
 use Phpactor\TextDocument\TextDocumentUri;
@@ -45,7 +46,7 @@ class PhpactorHandlerLoader implements HandlerLoader
         $container = $this->container;
         $parameters = $container->getParameters();
         $parameters[FilePathResolverExtension::PARAM_PROJECT_ROOT] = TextDocumentUri::fromString(
-            $params->rootUri
+            $this->resolveRootUri($params, $sessionServices)
         )->path();
 
         $extensionClasses = $container->getParameter(
@@ -90,5 +91,16 @@ class PhpactorHandlerLoader implements HandlerLoader
         }
 
         return $container->build($parameters);
+    }
+
+    private function resolveRootUri(InitializeParams $params, SessionServices $sessionServices): string
+    {
+        if (null === $params->rootUri) {
+            throw new ExitSession(
+                'Phpactor Language Server must be initialized with a root URI, NULL provided'
+            );
+        }
+
+        return $params->rootUri;
     }
 }

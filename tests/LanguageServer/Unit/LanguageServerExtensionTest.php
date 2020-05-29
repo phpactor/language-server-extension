@@ -3,6 +3,7 @@
 namespace Phpactor\Extension\LanguageServer\Tests\Unit;
 
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
+use Phpactor\LanguageServer\Core\Server\Exception\ExitSession;
 use Phpactor\LanguageServer\Core\Session\WorkspaceListener;
 
 class LanguageServerExtensionTest extends LanguageServerTestCase
@@ -40,6 +41,15 @@ class LanguageServerExtensionTest extends LanguageServerTestCase
         ]);
         $this->assertTrue($serverTester->assertSuccess($response));
         $this->assertEquals('hello', $response->result);
+    }
+
+    public function testNullPath(): void
+    {
+        $this->expectException(ExitSession::class);
+        $serverTester = $this->createTester();
+        $serverTester->dispatchAndWait(1, 'initialize', [
+            'rootUri' => null,
+        ]);
     }
 
     public function testDisablesWorkspaceListener(): void
