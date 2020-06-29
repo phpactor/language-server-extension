@@ -47,9 +47,11 @@ class LanguageServerExtensionTest extends LanguageServerTestCase
     {
         $this->expectException(ExitSession::class);
         $serverTester = $this->createTester();
-        $serverTester->dispatchAndWait(1, 'initialize', [
+        $response = $serverTester->dispatchAndWait(1, 'initialize', [
+            'capabilities' => [],
             'rootUri' => null,
         ]);
+        $serverTester->assertSuccess($response);
     }
 
     public function testDisablesWorkspaceListener(): void

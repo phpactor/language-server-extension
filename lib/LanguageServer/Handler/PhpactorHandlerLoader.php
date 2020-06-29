@@ -2,7 +2,7 @@
 
 namespace Phpactor\Extension\LanguageServer\Handler;
 
-use LanguageServerProtocol\InitializeParams;
+use Phpactor\LanguageServerProtocol\InitializeParams;
 use Phpactor\Container\Container;
 use Phpactor\Container\PhpactorContainer;
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
@@ -58,7 +58,7 @@ class PhpactorHandlerLoader implements HandlerLoader
 
         $container = $this->buildContainer(
             $extensionClasses,
-            array_merge($parameters, $params->initializationOptions, [
+            array_merge($parameters, $params->initializationOptions ?? [], [
                 LanguageServerExtension::PARAM_CLIENT_CAPABILITIES => $params->capabilities
             ]),
             $sessionServices

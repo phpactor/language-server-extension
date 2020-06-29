@@ -4,7 +4,7 @@ namespace Phpactor\Extension\LanguageServer\Tests\Example;
 
 use Amp\Promise;
 use Amp\Success;
-use LanguageServerProtocol\MessageType;
+use Phpactor\LanguageServerProtocol\MessageType;
 use Phpactor\Container\Container;
 use Phpactor\Container\ContainerBuilder;
 use Phpactor\Container\Extension;

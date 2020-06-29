@@ -4,7 +4,7 @@ namespace Phpactor\Extension\LanguageServer\Handler;
 
 use Amp\Promise;
 use Amp\Success;
-use LanguageServerProtocol\TextDocumentItem;
+use Phpactor\LanguageServerProtocol\TextDocumentItem;
 use Phpactor\Container\Container;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
 use Phpactor\LanguageServer\Core\Handler\Handler;

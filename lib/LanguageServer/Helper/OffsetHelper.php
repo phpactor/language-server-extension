@@ -2,7 +2,7 @@
 
 namespace Phpactor\Extension\LanguageServer\Helper;
 
-use LanguageServerProtocol\Position;
+use Phpactor\LanguageServerProtocol\Position;
 
 class OffsetHelper
 {

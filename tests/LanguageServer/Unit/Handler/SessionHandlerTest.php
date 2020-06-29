@@ -10,7 +10,7 @@ class SessionHandlerTest extends LanguageServerTestCase
     {
         $tester = $this->createTester();
         $tester->initialize();
-        $response = $tester->dispatchAndWait(1, 'session/dumpConfig');
+        $response = $tester->dispatchAndWait(1, 'session/dumpConfig' ,);
         $tester->assertSuccess($response);
     }
 

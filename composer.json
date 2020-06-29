@@ -15,7 +15,7 @@
     "require": {
         "php": "^7.3",
         "phpactor/container": "^1.3.3",
-        "phpactor/language-server": "~0.4",
+        "phpactor/language-server": "dev-lsp-prot-1",
         "phpactor/console-extension": "~0.1",
         "phpactor/logging-extension": "~0.3.3",
         "phpactor/file-path-resolver-extension": "~0.2",
