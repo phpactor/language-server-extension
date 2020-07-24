@@ -6,19 +6,17 @@ use Phpactor\Extension\LanguageServer\Tests\Unit\LanguageServerTestCase;
 
 class SessionHandlerTest extends LanguageServerTestCase
 {
-    public function testDumpConfig()
+    public function testDumpConfig(): Void
     {
         $tester = $this->createTester();
-        $tester->initialize();
-        $response = $tester->dispatchAndWait(1, 'session/dumpConfig' ,);
-        $tester->assertSuccess($response);
+        $response = $tester->requestAndWait('session/dumpConfig', []);
+        $this->assertSuccess($response);
     }
 
     public function testDumpWorkspace()
     {
         $tester = $this->createTester();
-        $tester->initialize();
-        $response = $tester->dispatchAndWait(1, 'session/dumpWorkspace');
-        $tester->assertSuccess($response);
+        $response = $tester->requestAndWait('session/dumpWorkspace', []);
+        $this->assertSuccess($response);
     }
 }

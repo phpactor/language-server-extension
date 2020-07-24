@@ -19,18 +19,9 @@ class StartCommandTest extends LanguageServerTestCase
         $this->tester = new CommandTester($container->get('language_server.command.lsp_start'));
     }
 
-    public function testRecordToNonExistingFile()
-    {
-        $this->expectException(RuntimeException::class);
-        $this->tester->execute([
-            '--record' => 'foobar/ads',
-        ]);
-    }
-
-    public function testDebugOptions()
+    public function testCommandStarts(): void
     {
         $exitCode = $this->tester->execute([
-            '--throw' => true,
             '--no-loop' => true,
         ]);
         self::assertEquals(0, $exitCode);

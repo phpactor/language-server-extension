@@ -15,6 +15,8 @@ class StartCommand extends Command
     public const NAME = 'language-server';
 
     private const OPT_ADDRESS = 'address';
+    private const OPT_NO_LOOP = 'no-loop';
+
 
     /**
      * @var LanguageServerBuilder
@@ -31,11 +33,14 @@ class StartCommand extends Command
     {
         $this->setDescription('Start Language Server');
         $this->addOption(self::OPT_ADDRESS, null, InputOption::VALUE_REQUIRED, 'Start a TCP server at this address (e.g. 127.0.0.1:0)');
+        $this->addOption(self::OPT_NO_LOOP, null, InputOption::VALUE_NONE, 'Do not run the event loop (debug)');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $address = $input->getOption(self::OPT_ADDRESS);
+        $noLoop = (bool)$input->getOption(self::OPT_NO_LOOP);
+
         $builder = $this->languageServerBuilder;
 
         $this->logMessage($output, '<info>Starting language server, use -vvv for verbose output</>');
@@ -44,7 +49,14 @@ class StartCommand extends Command
             $this->configureTcpServer($address, $builder);
         }
 
-        $builder->build()->run();
+        $server = $builder->build();
+
+        if ($noLoop) {
+            $server->start();
+            return 0;
+        }
+
+        $server->run();
 
         return 0;
     }

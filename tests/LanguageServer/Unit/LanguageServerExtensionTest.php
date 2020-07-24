@@ -3,6 +3,9 @@
 namespace Phpactor\Extension\LanguageServer\Tests\Unit;
 
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
+use Phpactor\LanguageServerProtocol\ClientCapabilities;
+use Phpactor\LanguageServerProtocol\InitializeParams;
+use Phpactor\LanguageServer\Core\Rpc\ResponseMessage;
 use Phpactor\LanguageServer\Core\Server\Exception\ExitSession;
 use Phpactor\LanguageServer\Core\Session\WorkspaceListener;
 
@@ -11,47 +14,42 @@ class LanguageServerExtensionTest extends LanguageServerTestCase
     public function testInitializesLanguageServer(): void
     {
         $serverTester = $this->createTester();
-        $serverTester->initialize();
     }
 
     public function testLoadsTextDocuments(): void
     {
         $serverTester = $this->createTester();
-        $responses = $serverTester->initialize();
-        $serverTester->assertSuccess($responses);
+        $serverTester->openTextDocument(__FILE__, (string)file_get_contents(__FILE__));
     }
 
     public function testLoadsHandlers(): void
     {
         $serverTester = $this->createTester();
-        $serverTester->initialize();
-        $response = $serverTester->dispatchAndWait(1, 'test', []);
-        $this->assertTrue($serverTester->assertSuccess($response));
+        $response = $serverTester->requestAndWait('test', []);
+        $this->assertSuccess($response);
     }
 
     public function testRegistersCommands(): void
     {
         $serverTester = $this->createTester();
-        $serverTester->initialize();
-        $response = $serverTester->dispatchAndWait(1, 'workspace/executeCommand', [
+        $response = $serverTester->requestAndWait('workspace/executeCommand', [
             'command' => 'echo',
             'arguments' => [
                 'hello',
             ],
         ]);
-        $this->assertTrue($serverTester->assertSuccess($response));
+        $this->assertSuccess($response);
         $this->assertEquals('hello', $response->result);
     }
 
     public function testNullPath(): void
     {
         $this->expectException(ExitSession::class);
-        $serverTester = $this->createTester();
-        $response = $serverTester->dispatchAndWait(1, 'initialize', [
+
+        $this->createTester(InitializeParams::fromArray([
             'capabilities' => [],
             'rootUri' => null,
-        ]);
-        $serverTester->assertSuccess($response);
+        ]));
     }
 
     public function testDisablesWorkspaceListener(): void

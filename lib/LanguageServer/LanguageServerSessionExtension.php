@@ -5,14 +5,25 @@ namespace Phpactor\Extension\LanguageServer;
 use Phpactor\Container\Container;
 use Phpactor\Container\ContainerBuilder;
 use Phpactor\Container\Extension;
+use Phpactor\Extension\Logger\LoggingExtension;
+use Phpactor\LanguageServer\Core\Dispatcher\Dispatcher\MiddlewareDispatcher;
+use Phpactor\LanguageServer\Core\Handler\Handlers;
+use Phpactor\LanguageServer\Core\Handler\MethodRunner;
 use Phpactor\LanguageServer\Core\Server\ClientApi;
 use Phpactor\LanguageServer\Core\Server\ResponseWatcher;
+use Phpactor\LanguageServer\Core\Server\ResponseWatcher\DeferredResponseWatcher;
 use Phpactor\LanguageServer\Core\Server\RpcClient;
 use Phpactor\LanguageServer\Core\Server\RpcClient\JsonRpcClient;
 use Phpactor\LanguageServer\Core\Server\SessionServices;
 use Phpactor\LanguageServer\Core\Server\Transmitter\MessageTransmitter;
 use Phpactor\LanguageServer\Core\Service\ServiceManager;
+use Phpactor\LanguageServer\Core\Service\ServiceProviders;
+use Phpactor\LanguageServer\Middleware\HandlerMiddleware;
+use Phpactor\LanguageServer\Middleware\CancellationMiddleware;
+use Phpactor\LanguageServer\Middleware\InitializeMiddleware;
+use Phpactor\LanguageServer\Middleware\ErrorHandlingMiddleware;
 use Phpactor\MapResolver\Resolver;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class LanguageServerSessionExtension implements Extension
 {
@@ -37,16 +48,16 @@ class LanguageServerSessionExtension implements Extension
             return $this->transmitter;
         });
 
+        $container->register(ResponseWatcher::class, function (Container $container) {
+            return new DeferredResponseWatcher();
+        });
+
         $container->register(ClientApi::class, function (Container $container) {
             return new ClientApi($container->get(RpcClient::class));
         });
 
         $container->register(RpcClient::class, function (Container $container) {
-            return new JsonRpcClient($this->transmitter, $this->watcher);
-        });
-
-        $container->register(ServiceManager::class, function (Container $container) {
-            return $this->serviceManager;
+            return new JsonRpcClient($this->transmitter, $container->get(ResponseWatcher::class));
         });
     }
 

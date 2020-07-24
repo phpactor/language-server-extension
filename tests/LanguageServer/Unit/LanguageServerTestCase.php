@@ -12,11 +12,13 @@ use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
 use Phpactor\LanguageServerProtocol\ClientCapabilities;
 use Phpactor\LanguageServerProtocol\InitializeParams;
+use Phpactor\LanguageServer\Core\Rpc\ResponseMessage;
 use Phpactor\LanguageServer\LanguageServerBuilder;
 use Phpactor\LanguageServer\Test\LanguageServerTester;
 use Phpactor\LanguageServer\Test\ProtocolFactory;
 use Phpactor\LanguageServer\Test\ServerTester;
 use Phpactor\TestUtils\Workspace;
+use RuntimeException;
 
 class LanguageServerTestCase extends TestCase
 {
@@ -33,10 +35,12 @@ class LanguageServerTestCase extends TestCase
             LanguageServerExtension::class,
             LoggingExtension::class,
             FilePathResolverExtension::class
-        ], $params);
+        ], array_merge([
+            LanguageServerExtension::PARAM_CATCH_ERRORS => false,
+        ], $params));
     }
 
-    protected function createTester(): LanguageServerTester
+    protected function createTester(?InitializeParams $params = null): LanguageServerTester
     {
         $builder = $this->createContainer()->get(
             LanguageServerBuilder::class
@@ -44,6 +48,20 @@ class LanguageServerTestCase extends TestCase
         
         $this->assertInstanceOf(LanguageServerBuilder::class, $builder);
         
-        return $builder->tester(ProtocolFactory::initializeParams($this->workspace()->path('/')));
+        return $builder->tester($params ?? ProtocolFactory::initializeParams($this->workspace()->path('/')));
+    }
+
+    protected function assertSuccess(ResponseMessage $response): void
+    {
+        if (!$response->error) {
+            return;
+        }
+
+        throw new RuntimeException(sprintf(
+            'Response was not successful: [%s] %s: %s',
+            $response->error->code,
+            $response->error->message,
+            $response->error->data
+        ));
     }
 }
