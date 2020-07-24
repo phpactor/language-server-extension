@@ -8,8 +8,7 @@ use Phpactor\Container\Container;
 use Phpactor\Container\ContainerBuilder;
 use Phpactor\Container\Extension;
 use Phpactor\Extension\LanguageServer\Dispatcher\PhpactorDispatcherFactory;
-use Phpactor\Extension\LanguageServer\Handler\PhpactorHandlerLoader;
-use Phpactor\Extension\LanguageServer\Handler\SessionHandler;
+use Phpactor\Extension\LanguageServer\Handler\DebugHandler;
 use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\Console\ConsoleExtension;
 use Phpactor\Extension\LanguageServer\Command\StartCommand;
@@ -29,7 +28,6 @@ use Phpactor\LanguageServer\Core\Service\ServiceManager;
 use Phpactor\LanguageServer\Core\Session\Workspace;
 use Phpactor\LanguageServer\Handler\System\ExitHandler;
 use Phpactor\LanguageServer\Handler\System\StatsHandler;
-use Phpactor\LanguageServer\Handler\System\SystemHandler;
 use Phpactor\LanguageServer\Middleware\HandlerMiddleware;
 use Phpactor\LanguageServer\Core\Session\WorkspaceListener;
 use Phpactor\LanguageServer\Middleware\CancellationMiddleware;
@@ -139,7 +137,7 @@ EOT
         ]);
 
         $container->register('language_server.session.handler.session', function (Container $container) {
-            return new SessionHandler(
+            return new DebugHandler(
                 $container,
                 $container->get(ClientApi::class),
                 $container->get(self::SERVICE_SESSION_WORKSPACE),

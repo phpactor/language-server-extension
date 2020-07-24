@@ -2,9 +2,6 @@ parameters:
     level: 7
     inferPrivatePropertyTypeFromConstructor: true
     checkMissingIterableValueType: false
-    ignoreErrors:
-        - '{Unable to resolve the template type}'
-        - '{Handler.*has no return type}'
         
     paths:
         - lib

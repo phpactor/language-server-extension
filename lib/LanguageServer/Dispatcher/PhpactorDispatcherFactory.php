@@ -5,22 +5,16 @@ namespace Phpactor\Extension\LanguageServer\Dispatcher;
 use Phpactor\Extension\LanguageServer\LanguageServerSessionExtension;
 use Phpactor\Container\PhpactorContainer;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
-use Phpactor\LanguageServer\Core\Dispatcher\Dispatcher\ClosureDispatcher;
 use Phpactor\LanguageServer\Core\Dispatcher\Dispatcher\MiddlewareDispatcher;
-use Phpactor\LanguageServer\Core\Server\ClientApi;
 use Phpactor\LanguageServer\Core\Server\Exception\ExitSession;
-use Phpactor\LanguageServer\Core\Server\RpcClient\JsonRpcClient;
 use Phpactor\Container\Container;
-use Phpactor\LanguageServer\Core\Server\ResponseWatcher\DeferredResponseWatcher;
 use Phpactor\MapResolver\Resolver;
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\LanguageServerProtocol\InitializeParams;
 use Phpactor\TextDocument\TextDocumentUri;
 use Phpactor\LanguageServer\Core\Dispatcher\Dispatcher;
-use Phpactor\LanguageServer\Core\Handler\Handlers;
 use Phpactor\LanguageServer\Core\Dispatcher\DispatcherFactory;
 use Phpactor\LanguageServer\Core\Server\Transmitter\MessageTransmitter;
-use Psr\Container\ContainerInterface;
 
 class PhpactorDispatcherFactory implements DispatcherFactory
 {

@@ -11,8 +11,11 @@ use Phpactor\LanguageServer\Core\Handler\Handler;
 use Phpactor\LanguageServer\Core\Server\ClientApi;
 use Phpactor\LanguageServer\Core\Session\Workspace;
 
-class SessionHandler implements Handler
+class DebugHandler implements Handler
 {
+    const METHOD_DEBUG_CONFIG = 'phpactor/debug/config';
+    const METHOD_DEBUG_WORKSPACE = 'phpactor/debug/workspace';
+
     /**
      * @var Container
      */
@@ -41,8 +44,8 @@ class SessionHandler implements Handler
     public function methods(): array
     {
         return [
-            'phpactor/debug/config' => 'dumpConfig',
-            'phpactor/debug/workspace' => 'dumpWorkspace'
+            self::METHOD_DEBUG_CONFIG => 'dumpConfig',
+            self::METHOD_DEBUG_WORKSPACE => 'dumpWorkspace'
         ];
     }
 

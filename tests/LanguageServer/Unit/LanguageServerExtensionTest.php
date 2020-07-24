@@ -3,10 +3,8 @@
 namespace Phpactor\Extension\LanguageServer\Tests\Unit;
 
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
-use Phpactor\LanguageServerProtocol\ClientCapabilities;
 use Phpactor\LanguageServerProtocol\InitializeParams;
 use Phpactor\LanguageServer\Core\Rpc\NotificationMessage;
-use Phpactor\LanguageServer\Core\Rpc\ResponseMessage;
 use Phpactor\LanguageServer\Core\Server\Exception\ExitSession;
 use Phpactor\LanguageServer\Core\Session\WorkspaceListener;
 
@@ -49,7 +47,7 @@ class LanguageServerExtensionTest extends LanguageServerTestCase
         $serverTester->requestAndWait('exit', []);
     }
 
-    public function test(): void
+    public function testDebug(): void
     {
         $this->expectException(ExitSession::class);
 

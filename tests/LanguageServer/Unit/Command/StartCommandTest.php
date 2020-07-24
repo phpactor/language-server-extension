@@ -3,7 +3,6 @@
 namespace Phpactor\Extension\LanguageServer\Tests\Unit\Command;
 
 use Phpactor\Extension\LanguageServer\Tests\Unit\LanguageServerTestCase;
-use RuntimeException;
 use Symfony\Component\Console\Tester\CommandTester;
 
 class StartCommandTest extends LanguageServerTestCase
