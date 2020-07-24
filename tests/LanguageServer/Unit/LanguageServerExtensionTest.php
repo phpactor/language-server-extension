@@ -5,6 +5,7 @@ namespace Phpactor\Extension\LanguageServer\Tests\Unit;
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\LanguageServerProtocol\ClientCapabilities;
 use Phpactor\LanguageServerProtocol\InitializeParams;
+use Phpactor\LanguageServer\Core\Rpc\NotificationMessage;
 use Phpactor\LanguageServer\Core\Rpc\ResponseMessage;
 use Phpactor\LanguageServer\Core\Server\Exception\ExitSession;
 use Phpactor\LanguageServer\Core\Session\WorkspaceListener;
@@ -28,6 +29,34 @@ class LanguageServerExtensionTest extends LanguageServerTestCase
         $response = $serverTester->requestAndWait('test', []);
         $this->assertSuccess($response);
     }
+
+    public function testReturnsStats(): void
+    {
+        $serverTester = $this->createTester();
+        $response = $serverTester->requestAndWait('phpactor/stats', []);
+        $this->assertSuccess($response);
+        $message = $serverTester->transmitter()->shift();
+        self::assertNotNull($message);
+        assert($message instanceof NotificationMessage);
+        self::assertStringContainsString('requests: 0', $message->params['message']);
+    }
+
+    public function testExit(): void
+    {
+        $this->expectException(ExitSession::class);
+
+        $serverTester = $this->createTester();
+        $serverTester->requestAndWait('exit', []);
+    }
+
+    public function test(): void
+    {
+        $this->expectException(ExitSession::class);
+
+        $serverTester = $this->createTester();
+        $serverTester->requestAndWait('exit', []);
+    }
+
 
     public function testRegistersCommands(): void
     {

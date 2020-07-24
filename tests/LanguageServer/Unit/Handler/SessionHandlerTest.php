@@ -9,14 +9,14 @@ class SessionHandlerTest extends LanguageServerTestCase
     public function testDumpConfig(): Void
     {
         $tester = $this->createTester();
-        $response = $tester->requestAndWait('session/dumpConfig', []);
+        $response = $tester->requestAndWait('phpactor/debug/config', []);
         $this->assertSuccess($response);
     }
 
     public function testDumpWorkspace()
     {
         $tester = $this->createTester();
-        $response = $tester->requestAndWait('session/dumpWorkspace', []);
+        $response = $tester->requestAndWait('phpactor/debug/workspace', []);
         $this->assertSuccess($response);
     }
 }

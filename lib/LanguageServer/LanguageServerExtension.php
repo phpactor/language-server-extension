@@ -27,6 +27,8 @@ use Phpactor\LanguageServer\Core\Server\ServerStats;
 use Phpactor\LanguageServer\Core\Service\ServiceProviders;
 use Phpactor\LanguageServer\Core\Service\ServiceManager;
 use Phpactor\LanguageServer\Core\Session\Workspace;
+use Phpactor\LanguageServer\Handler\System\ExitHandler;
+use Phpactor\LanguageServer\Handler\System\StatsHandler;
 use Phpactor\LanguageServer\Handler\System\SystemHandler;
 use Phpactor\LanguageServer\Middleware\HandlerMiddleware;
 use Phpactor\LanguageServer\Core\Session\WorkspaceListener;
@@ -261,11 +263,15 @@ EOT
             return new TextDocumentHandler($container->get(EventDispatcherInterface::class));
         }, [ self::TAG_SESSION_HANDLER => []]);
 
-        $container->register(SystemHandler::class, function (Container $container) {
-            return new SystemHandler(
+        $container->register(StatsHandler::class, function (Container $container) {
+            return new StatsHandler(
                 $container->get(ClientApi::class),
                 $container->get(ServerStats::class)
             );
+        }, [ self::TAG_SESSION_HANDLER => []]);
+
+        $container->register(ExitHandler::class, function (Container $container) {
+            return new ExitHandler();
         }, [ self::TAG_SESSION_HANDLER => []]);
     }
 }

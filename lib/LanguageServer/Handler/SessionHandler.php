@@ -41,8 +41,8 @@ class SessionHandler implements Handler
     public function methods(): array
     {
         return [
-            'session/dumpConfig' => 'dumpConfig',
-            'session/dumpWorkspace' => 'dumpWorkspace'
+            'phpactor/debug/config' => 'dumpConfig',
+            'phpactor/debug/workspace' => 'dumpWorkspace'
         ];
     }
 
