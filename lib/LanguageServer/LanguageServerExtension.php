@@ -7,6 +7,7 @@ use Phly\EventDispatcher\ListenerProvider\ListenerProviderAggregate;
 use Phpactor\Container\Container;
 use Phpactor\Container\ContainerBuilder;
 use Phpactor\Container\Extension;
+use Phpactor\Extension\LanguageServer\Dispatcher\PhpactorDispatcherFactory;
 use Phpactor\Extension\LanguageServer\Handler\PhpactorHandlerLoader;
 use Phpactor\Extension\LanguageServer\Handler\SessionHandler;
 use Phpactor\Extension\Logger\LoggingExtension;
@@ -71,19 +72,13 @@ EOT
 
     private function registerServer(ContainerBuilder $container): void
     {
-        $container->register(self::SERVICE_LANGUAGE_SERVER_BUILDER, function (Container $container) {
+        $container->register(LanguageServerBuilder::class, function (Container $container) {
             $builder = LanguageServerBuilder::create(
+                new PhpactorDispatcherFactory($container),
                 $container->get(LoggingExtension::SERVICE_LOGGER)
-            );
-            $builder->addHandlerLoader(
-                $container->get('language_server.handler_loader.phpactor')
             );
 
             return $builder;
-        });
-
-        $container->register('language_server.handler_loader.phpactor', function (Container $container) {
-            return new PhpactorHandlerLoader($container);
         });
     }
 
@@ -94,7 +89,7 @@ EOT
         }
 
         $container->register('language_server.command.lsp_start', function (Container $container) {
-            return new StartCommand($container->get(self::SERVICE_LANGUAGE_SERVER_BUILDER));
+            return new StartCommand($container->get(LanguageServerBuilder::class));
         }, [ ConsoleExtension::TAG_COMMAND => [ 'name' => StartCommand::NAME ]]);
     }
 

@@ -14,11 +14,7 @@ class StartCommand extends Command
 {
     public const NAME = 'language-server';
 
-    private const OPT_RECORD = 'record';
     private const OPT_ADDRESS = 'address';
-    private const OPT_THROW = 'throw';
-    private const OPT_NO_LOOP = 'no-loop';
-
 
     /**
      * @var LanguageServerBuilder
@@ -35,42 +31,20 @@ class StartCommand extends Command
     {
         $this->setDescription('Start Language Server');
         $this->addOption(self::OPT_ADDRESS, null, InputOption::VALUE_REQUIRED, 'Start a TCP server at this address (e.g. 127.0.0.1:0)');
-        $this->addOption(self::OPT_RECORD, null, InputOption::VALUE_OPTIONAL, 'Record requests to log');
-        $this->addOption(self::OPT_THROW, '-t', InputOption::VALUE_NONE, 'Do not handle exceptions (for debugging)');
-        $this->addOption(self::OPT_NO_LOOP, null, InputOption::VALUE_NONE, 'Do not run the event loop (debug)');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $record = $input->getOption(self::OPT_RECORD);
         $address = $input->getOption(self::OPT_ADDRESS);
-        $throw = (bool)$input->getOption(self::OPT_THROW);
-        $noLoop = (bool)$input->getOption(self::OPT_NO_LOOP);
-
         $builder = $this->languageServerBuilder;
 
-        if ($throw) {
-            $builder->catchExceptions(false);
-        }
-
-        if ($noLoop) {
-            $builder->eventLoop(false);
-        }
-
         $this->logMessage($output, '<info>Starting language server, use -vvv for verbose output</>');
-
-        if ($record && is_string($record)) {
-            $filename = $this->assertIsWritable($record);
-            $this->logMessage($output, sprintf('<info>Recording output to:</> %s', $filename));
-            $builder->recordTo($filename);
-        }
 
         if ($address && is_string($address)) {
             $this->configureTcpServer($address, $builder);
         }
 
-        $server = $builder->build();
-        $server->start();
+        $builder->build()->run();
 
         return 0;
     }

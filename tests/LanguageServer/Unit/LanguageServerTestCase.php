@@ -10,11 +10,21 @@ use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\Extension\LanguageServer\Tests\Example\TestExtension;
 use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
+use Phpactor\LanguageServerProtocol\ClientCapabilities;
+use Phpactor\LanguageServerProtocol\InitializeParams;
 use Phpactor\LanguageServer\LanguageServerBuilder;
+use Phpactor\LanguageServer\Test\LanguageServerTester;
+use Phpactor\LanguageServer\Test\ProtocolFactory;
 use Phpactor\LanguageServer\Test\ServerTester;
+use Phpactor\TestUtils\Workspace;
 
 class LanguageServerTestCase extends TestCase
 {
+    protected function workspace(): Workspace
+    {
+        return Workspace::create(__DIR__ . '/../../Workspace');
+    }
+
     protected function createContainer(array $params = []): Container
     {
         return PhpactorContainer::fromExtensions([
@@ -26,14 +36,14 @@ class LanguageServerTestCase extends TestCase
         ], $params);
     }
 
-    protected function createTester(): ServerTester
+    protected function createTester(): LanguageServerTester
     {
         $builder = $this->createContainer()->get(
-            LanguageServerExtension::SERVICE_LANGUAGE_SERVER_BUILDER
+            LanguageServerBuilder::class
         );
         
         $this->assertInstanceOf(LanguageServerBuilder::class, $builder);
         
-        return $builder->buildServerTester();
+        return $builder->tester(ProtocolFactory::initializeParams($this->workspace()->path('/')));
     }
 }

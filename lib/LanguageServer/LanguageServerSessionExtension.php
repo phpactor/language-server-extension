@@ -6,7 +6,9 @@ use Phpactor\Container\Container;
 use Phpactor\Container\ContainerBuilder;
 use Phpactor\Container\Extension;
 use Phpactor\LanguageServer\Core\Server\ClientApi;
+use Phpactor\LanguageServer\Core\Server\ResponseWatcher;
 use Phpactor\LanguageServer\Core\Server\RpcClient;
+use Phpactor\LanguageServer\Core\Server\RpcClient\JsonRpcClient;
 use Phpactor\LanguageServer\Core\Server\SessionServices;
 use Phpactor\LanguageServer\Core\Server\Transmitter\MessageTransmitter;
 use Phpactor\LanguageServer\Core\Service\ServiceManager;
@@ -15,13 +17,15 @@ use Phpactor\MapResolver\Resolver;
 class LanguageServerSessionExtension implements Extension
 {
     /**
-     * @var SessionServices
+     * @var MessageTransmitter
      */
-    private $services;
+    private $transmitter;
 
-    public function __construct(SessionServices $services = null)
+    public function __construct(
+        MessageTransmitter $transmitter
+    )
     {
-        $this->services = $services;
+        $this->transmitter = $transmitter;
     }
 
     /**
@@ -30,7 +34,7 @@ class LanguageServerSessionExtension implements Extension
     public function load(ContainerBuilder $container)
     {
         $container->register(MessageTransmitter::class, function (Container $container) {
-            return $this->services->messageTransmitter();
+            return $this->transmitter;
         });
 
         $container->register(ClientApi::class, function (Container $container) {
@@ -38,11 +42,11 @@ class LanguageServerSessionExtension implements Extension
         });
 
         $container->register(RpcClient::class, function (Container $container) {
-            return $this->services->client();
+            return new JsonRpcClient($this->transmitter, $this->watcher);
         });
 
         $container->register(ServiceManager::class, function (Container $container) {
-            return $this->services->serviceManager();
+            return $this->serviceManager;
         });
     }
 
