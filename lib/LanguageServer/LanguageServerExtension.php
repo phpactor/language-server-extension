@@ -8,6 +8,7 @@ use Phpactor\Container\Container;
 use Phpactor\Container\ContainerBuilder;
 use Phpactor\Container\Extension;
 use Phpactor\Extension\LanguageServer\Dispatcher\PhpactorDispatcherFactory;
+use Phpactor\Extension\LanguageServer\EventDispatcher\LazyAggregateProvider;
 use Phpactor\Extension\LanguageServer\Handler\DebugHandler;
 use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\Console\ConsoleExtension;
@@ -159,18 +160,10 @@ EOT
     private function registerEventDispatcher(ContainerBuilder $container): void
     {
         $container->register(EventDispatcherInterface::class, function (Container $container) {
-            $aggregate = new ListenerProviderAggregate();
-            foreach (array_keys($container->getServiceIdsForTag(self::TAG_LISTENER_PROVIDER)) as $serviceId) {
-                $listener = $container->get($serviceId);
-
-                // if listener is NULL then assume it was conditionally
-                // disabled
-                if (null === $listener) {
-                    continue;
-                }
-
-                $aggregate->attach($listener);
-            }
+            $aggregate = new LazyAggregateProvider(
+                $container,
+                array_keys($container->getServiceIdsForTag(self::TAG_LISTENER_PROVIDER))
+            );
 
             return new EventDispatcher($aggregate);
         });
