@@ -38,6 +38,7 @@ use Phpactor\LanguageServer\Middleware\ErrorHandlingMiddleware;
 use Phpactor\LanguageServer\Handler\TextDocument\TextDocumentHandler;
 use Phpactor\LanguageServer\Handler\Workspace\CommandHandler;
 use Phpactor\LanguageServer\LanguageServerBuilder;
+use Phpactor\LanguageServer\Middleware\MethodAliasMiddleware;
 use Phpactor\LanguageServer\Workspace\CommandDispatcher;
 use Phpactor\MapResolver\Resolver;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -57,6 +58,7 @@ class LanguageServerExtension implements Extension
     public const PARAM_CLIENT_CAPABILITIES = 'language_server.client_capabilities';
     public const PARAM_ENABLE_WORKPACE = 'language_server.enable_workspace';
     public const PARAM_CATCH_ERRORS = 'language_server.catch_errors';
+    public const PARAM_METHOD_ALIAS_MAP = 'language_server.method_alias_map';
 
     /**
      * {@inheritDoc}
@@ -67,8 +69,10 @@ class LanguageServerExtension implements Extension
             self::PARAM_CATCH_ERRORS => true,
             self::PARAM_ENABLE_WORKPACE => true,
             self::PARAM_SESSION_PARAMETERS => [],
+            self::PARAM_METHOD_ALIAS_MAP => [],
         ]);
         $schema->setDescriptions([
+            self::PARAM_METHOD_ALIAS_MAP => 'Allow method names to be re-mapped. Useful for maintaining backwards compatibility',
             self::PARAM_SESSION_PARAMETERS => 'Phpactor parameters (config) that apply only to the language server session',
             self::PARAM_ENABLE_WORKPACE => <<<'EOT'
 If workspace management / text synchronization should be enabled (this isn't required for some language server implementations, e.g. static analyzers)
@@ -233,6 +237,8 @@ EOT
             $stack[] = new CancellationMiddleware(
                 $container->get(MethodRunner::class)
             );
+
+            $stack[] = new MethodAliasMiddleware($container->getParameter(self::PARAM_METHOD_ALIAS_MAP));
 
             $stack[] = new HandlerMiddleware(
                 $container->get(MethodRunner::class)
