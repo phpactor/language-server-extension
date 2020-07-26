@@ -23,6 +23,8 @@ use Phpactor\LanguageServer\Core\Handler\Handlers;
 use Phpactor\LanguageServer\Core\Dispatcher\Dispatcher\MiddlewareDispatcher;
 use Phpactor\LanguageServer\Core\Server\ClientApi;
 use Phpactor\LanguageServer\Core\Server\ServerStats;
+use Phpactor\LanguageServer\Core\Service\ServiceListener;
+use Phpactor\LanguageServer\Core\Service\ServiceProvider;
 use Phpactor\LanguageServer\Core\Service\ServiceProviders;
 use Phpactor\LanguageServer\Core\Service\ServiceManager;
 use Phpactor\LanguageServer\Core\Session\Workspace;
@@ -49,6 +51,7 @@ class LanguageServerExtension implements Extension
     public const SERVICE_SESSION_WORKSPACE = 'language_server.session.workspace';
     public const TAG_METHOD_HANDLER = 'language_server.session_handler';
     public const TAG_COMMAND = 'language_server.command';
+    public const TAG_SERVICE_PROVIDER = 'language_server.service_provider';
     public const TAG_LISTENER_PROVIDER = 'language_server.listener_provider';
 
     public const PARAM_SESSION_PARAMETERS = 'language_server.session_parameters';
@@ -194,11 +197,33 @@ EOT
 
     private function registerServiceManager(ContainerBuilder $container): void
     {
+        $container->register(ServiceListener::class, function (Container $container) {
+            return new ServiceListener($container->get(ServiceManager::class));
+        }, [
+            self::TAG_LISTENER_PROVIDER => [],
+        ]);
+
         $container->register(ServiceManager::class, function (Container $container) {
             return new ServiceManager(
-                new ServiceProviders([]),
+                $container->get(ServiceProviders::class),
                 $container->get(LoggingExtension::SERVICE_LOGGER)
             );
+        });
+        $container->register(ServiceProviders::class, function (Container $container) {
+            $providers = [];
+            foreach ($container->getServiceIdsForTag(self::TAG_SERVICE_PROVIDER) as $serviceId => $attrs) {
+                $provider = $container->get($serviceId);
+                if (!$provider instanceof ServiceProvider) {
+                    throw new RuntimeException(sprintf(
+                        'Tagged service provider "%s" does not implement ServiceProvider interface, is a "%s"',
+                        $serviceId,
+                        is_object($provider) ? get_class($provider) : gettype($provider)
+                    ));
+                }
+                $providers[] = $provider;
+            }
+
+            return new ServiceProviders($providers);
         });
     }
 

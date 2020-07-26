@@ -7,6 +7,8 @@ use Phpactor\LanguageServerProtocol\InitializeParams;
 use Phpactor\LanguageServer\Core\Rpc\NotificationMessage;
 use Phpactor\LanguageServer\Core\Server\Exception\ExitSession;
 use Phpactor\LanguageServer\Core\Session\WorkspaceListener;
+use function Amp\Promise\wait;
+use function Amp\delay;
 
 class LanguageServerExtensionTest extends LanguageServerTestCase
 {
@@ -42,7 +44,12 @@ class LanguageServerExtensionTest extends LanguageServerTestCase
     public function testStartsServices(): void
     {
         $serverTester = $this->createTester();
-        $serverTester->openTextDocument(__FILE__, (string)file_get_contents(__FILE__));
+        $serverTester->initialize();
+        wait(delay(10));
+        $message = $serverTester->transmitter()->shift();
+        self::assertNotNull($message);
+        assert($message instanceof NotificationMessage);
+        self::assertEquals('service started', $message->params['message']);
     }
 
     public function testExit(): void
