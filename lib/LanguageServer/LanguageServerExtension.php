@@ -21,6 +21,7 @@ use Phpactor\LanguageServer\Core\Handler\MethodRunner;
 use Phpactor\LanguageServer\Core\Handler\Handlers;
 use Phpactor\LanguageServer\Core\Dispatcher\Dispatcher\MiddlewareDispatcher;
 use Phpactor\LanguageServer\Core\Server\ClientApi;
+use Phpactor\LanguageServer\Core\Server\ResponseWatcher;
 use Phpactor\LanguageServer\Core\Server\ServerStats;
 use Phpactor\LanguageServer\Core\Service\ServiceListener;
 use Phpactor\LanguageServer\Core\Service\ServiceProvider;
@@ -39,6 +40,7 @@ use Phpactor\LanguageServer\Handler\TextDocument\TextDocumentHandler;
 use Phpactor\LanguageServer\Handler\Workspace\CommandHandler;
 use Phpactor\LanguageServer\LanguageServerBuilder;
 use Phpactor\LanguageServer\Middleware\MethodAliasMiddleware;
+use Phpactor\LanguageServer\Middleware\ResponseHandlingMiddleware;
 use Phpactor\LanguageServer\Workspace\CommandDispatcher;
 use Phpactor\MapResolver\Resolver;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -239,6 +241,7 @@ EOT
             );
 
             $stack[] = new MethodAliasMiddleware($container->getParameter(self::PARAM_METHOD_ALIAS_MAP));
+            $stack[] = new ResponseHandlingMiddleware($container->get(ResponseWatcher::class));
 
             $stack[] = new HandlerMiddleware(
                 $container->get(MethodRunner::class)
