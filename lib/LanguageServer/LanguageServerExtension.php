@@ -3,7 +3,6 @@
 namespace Phpactor\Extension\LanguageServer;
 
 use Phly\EventDispatcher\EventDispatcher;
-use Phly\EventDispatcher\ListenerProvider\ListenerProviderAggregate;
 use Phpactor\Container\Container;
 use Phpactor\Container\ContainerBuilder;
 use Phpactor\Container\Extension;
@@ -17,7 +16,6 @@ use Phpactor\LanguageServer\Adapter\DTL\DTLArgumentResolver;
 use Phpactor\LanguageServer\Core\Dispatcher\ArgumentResolver;
 use Phpactor\LanguageServer\Core\Dispatcher\ArgumentResolver\ChainArgumentResolver;
 use Phpactor\LanguageServer\Core\Dispatcher\ArgumentResolver\LanguageSeverProtocolParamsResolver;
-use Phpactor\LanguageServer\Core\Handler\HandlerMethodResolver;
 use Phpactor\LanguageServer\Core\Handler\HandlerMethodRunner;
 use Phpactor\LanguageServer\Core\Handler\MethodRunner;
 use Phpactor\LanguageServer\Core\Handler\Handlers;
@@ -257,7 +255,6 @@ EOT
         $container->register(MethodRunner::class, function (Container $container) {
             return new HandlerMethodRunner(
                 $container->get(Handlers::class),
-                new HandlerMethodResolver(),
                 $container->get(ArgumentResolver::class),
                 $container->get(LoggingExtension::SERVICE_LOGGER)
             );

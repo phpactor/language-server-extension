@@ -13,7 +13,6 @@ use Phpactor\LanguageServer\Core\Handler\Handler;
 use Phpactor\LanguageServer\Core\Rpc\NotificationMessage;
 use Phpactor\LanguageServer\Core\Server\ClientApi;
 use Phpactor\LanguageServer\Core\Service\ServiceProvider;
-use Phpactor\LanguageServer\ServiceProvider\PingProvider;
 use Phpactor\MapResolver\Resolver;
 
 class TestExtension implements Extension
@@ -44,7 +43,8 @@ class TestExtension implements Extension
             return new class($container->get(ClientApi::class)) implements ServiceProvider {
                 /** @var ClientApi */
                 private $api;
-                public function __construct(ClientApi $api) {
+                public function __construct(ClientApi $api)
+                {
                     $this->api = $api;
                 }
                 public function services(): array

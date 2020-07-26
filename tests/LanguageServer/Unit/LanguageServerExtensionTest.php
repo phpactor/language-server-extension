@@ -20,7 +20,7 @@ class LanguageServerExtensionTest extends LanguageServerTestCase
     public function testLoadsTextDocuments(): void
     {
         $serverTester = $this->createTester();
-        $serverTester->openTextDocument(__FILE__, (string)file_get_contents(__FILE__));
+        $serverTester->textDocument()->open(__FILE__, (string)file_get_contents(__FILE__));
     }
 
     public function testLoadsHandlers(): void
