@@ -55,20 +55,25 @@ class PhpactorDispatcherFactory implements DispatcherFactory
         $container = $this->buildContainer(
             $extensionClasses,
             array_merge($parameters, $params->initializationOptions ?? []),
-            $transmitter
+            $transmitter,
+            $params
         );
 
         return $container;
     }
 
-    private function buildContainer(array $extensionClasses, array $parameters, MessageTransmitter $transmitter): Container
-    {
+    private function buildContainer(
+        array $extensionClasses,
+        array $parameters,
+        MessageTransmitter $transmitter,
+        InitializeParams $params
+    ): Container {
         $container = new PhpactorContainer();
 
         $extensions = array_map(function (string $class) {
             return new $class;
         }, $extensionClasses);
-        $extensions[] = new LanguageServerSessionExtension($transmitter);
+        $extensions[] = new LanguageServerSessionExtension($transmitter, $params);
 
         $resolver = new Resolver();
         $resolver->setDefaults([

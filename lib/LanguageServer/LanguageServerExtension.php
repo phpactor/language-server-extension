@@ -65,13 +65,11 @@ class LanguageServerExtension implements Extension
     {
         $schema->setDefaults([
             self::PARAM_CATCH_ERRORS => true,
-            self::PARAM_CLIENT_CAPABILITIES => [],
             self::PARAM_ENABLE_WORKPACE => true,
             self::PARAM_SESSION_PARAMETERS => [],
         ]);
         $schema->setDescriptions([
             self::PARAM_SESSION_PARAMETERS => 'Phpactor parameters (config) that apply only to the language server session',
-            self::PARAM_CLIENT_CAPABILITIES => 'For internal use only: will contain the capabilities of the connected language server client',
             self::PARAM_ENABLE_WORKPACE => <<<'EOT'
 If workspace management / text synchronization should be enabled (this isn't required for some language server implementations, e.g. static analyzers)
 EOT

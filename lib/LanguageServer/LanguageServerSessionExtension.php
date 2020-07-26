@@ -5,6 +5,8 @@ namespace Phpactor\Extension\LanguageServer;
 use Phpactor\Container\Container;
 use Phpactor\Container\ContainerBuilder;
 use Phpactor\Container\Extension;
+use Phpactor\LanguageServerProtocol\ClientCapabilities;
+use Phpactor\LanguageServerProtocol\InitializeParams;
 use Phpactor\LanguageServer\Core\Server\ClientApi;
 use Phpactor\LanguageServer\Core\Server\ResponseWatcher;
 use Phpactor\LanguageServer\Core\Server\ResponseWatcher\DeferredResponseWatcher;
@@ -20,10 +22,17 @@ class LanguageServerSessionExtension implements Extension
      */
     private $transmitter;
 
+    /**
+     * @var InitializeParams
+     */
+    private $initializeParams;
+
     public function __construct(
-        MessageTransmitter $transmitter
+        MessageTransmitter $transmitter,
+        InitializeParams $initializeParams
     ) {
         $this->transmitter = $transmitter;
+        $this->initializeParams = $initializeParams;
     }
 
     /**
@@ -31,6 +40,14 @@ class LanguageServerSessionExtension implements Extension
      */
     public function load(ContainerBuilder $container)
     {
+        $container->register(ClientCapabilities::class, function (Container $container) {
+            return $this->initializeParams->capabilities;
+        });
+
+        $container->register(InitializeParams::class, function (Container $container) {
+            return $this->initializeParams;
+        });
+
         $container->register(MessageTransmitter::class, function (Container $container) {
             return $this->transmitter;
         });
