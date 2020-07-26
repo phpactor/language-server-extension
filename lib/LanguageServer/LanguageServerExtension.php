@@ -47,7 +47,7 @@ class LanguageServerExtension implements Extension
     public const SERVICE_LANGUAGE_SERVER_BUILDER = 'language_server.builder';
     public const SERVICE_EVENT_EMITTER = 'language_server.event_emitter';
     public const SERVICE_SESSION_WORKSPACE = 'language_server.session.workspace';
-    public const TAG_SESSION_HANDLER = 'language_server.session_handler';
+    public const TAG_METHOD_HANDLER = 'language_server.session_handler';
     public const TAG_COMMAND = 'language_server.command';
     public const TAG_LISTENER_PROVIDER = 'language_server.listener_provider';
 
@@ -142,15 +142,15 @@ EOT
                 $container->get(ClientApi::class),
                 $container->get(self::SERVICE_SESSION_WORKSPACE),
             );
-        }, [ self::TAG_SESSION_HANDLER => []]);
+        }, [ self::TAG_METHOD_HANDLER => []]);
 
         $container->register(ServiceHandler::class, function (Container $container) {
             return new ServiceHandler($container->get(ServiceManager::class), $container->get(ClientApi::class));
-        }, [ self::TAG_SESSION_HANDLER => []]);
+        }, [ self::TAG_METHOD_HANDLER => []]);
 
         $container->register(CommandHandler::class, function (Container $container) {
             return new CommandHandler($container->get(CommandDispatcher::class));
-        }, [ self::TAG_SESSION_HANDLER => []]);
+        }, [ self::TAG_METHOD_HANDLER => []]);
     }
 
     private function registerEventDispatcher(ContainerBuilder $container): void
@@ -249,7 +249,7 @@ EOT
             $handlers = [];
         
             foreach (array_keys(
-                $container->getServiceIdsForTag(LanguageServerExtension::TAG_SESSION_HANDLER)
+                $container->getServiceIdsForTag(LanguageServerExtension::TAG_METHOD_HANDLER)
             ) as $serviceId) {
                 $handlers[] = $container->get($serviceId);
             }
@@ -259,17 +259,17 @@ EOT
 
         $container->register(TextDocumentHandler::class, function (Container $container) {
             return new TextDocumentHandler($container->get(EventDispatcherInterface::class));
-        }, [ self::TAG_SESSION_HANDLER => []]);
+        }, [ self::TAG_METHOD_HANDLER => []]);
 
         $container->register(StatsHandler::class, function (Container $container) {
             return new StatsHandler(
                 $container->get(ClientApi::class),
                 $container->get(ServerStats::class)
             );
-        }, [ self::TAG_SESSION_HANDLER => []]);
+        }, [ self::TAG_METHOD_HANDLER => []]);
 
         $container->register(ExitHandler::class, function (Container $container) {
             return new ExitHandler();
-        }, [ self::TAG_SESSION_HANDLER => []]);
+        }, [ self::TAG_METHOD_HANDLER => []]);
     }
 }

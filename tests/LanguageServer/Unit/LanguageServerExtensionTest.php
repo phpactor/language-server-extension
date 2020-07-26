@@ -39,6 +39,12 @@ class LanguageServerExtensionTest extends LanguageServerTestCase
         self::assertStringContainsString('requests: 0', $message->params['message']);
     }
 
+    public function testStartsServices(): void
+    {
+        $serverTester = $this->createTester();
+        $serverTester->openTextDocument(__FILE__, (string)file_get_contents(__FILE__));
+    }
+
     public function testExit(): void
     {
         $this->expectException(ExitSession::class);
@@ -54,7 +60,6 @@ class LanguageServerExtensionTest extends LanguageServerTestCase
         $serverTester = $this->createTester();
         $serverTester->requestAndWait('exit', []);
     }
-
 
     public function testRegistersCommands(): void
     {

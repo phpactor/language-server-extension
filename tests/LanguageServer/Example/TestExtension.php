@@ -11,6 +11,7 @@ use Phpactor\Container\Extension;
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\LanguageServer\Core\Handler\Handler;
 use Phpactor\LanguageServer\Core\Rpc\NotificationMessage;
+use Phpactor\LanguageServer\ServiceProvider\PingProvider;
 use Phpactor\MapResolver\Resolver;
 
 class TestExtension implements Extension
@@ -35,7 +36,11 @@ class TestExtension implements Extension
                     ]));
                 }
             };
-        }, [ LanguageServerExtension::TAG_SESSION_HANDLER => []]);
+        }, [ LanguageServerExtension::TAG_METHOD_HANDLER => []]);
+
+        $container->register(PingProvider::class, function (Container $container) {
+            return new PingProvider();
+        }, [ LanguageServerExtension::TAG_METHOD_HANDLER => []]);
 
         $container->register('test.command', function (Container $container) {
             return new class {
