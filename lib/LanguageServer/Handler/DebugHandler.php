@@ -4,15 +4,18 @@ namespace Phpactor\Extension\LanguageServer\Handler;
 
 use Amp\Promise;
 use Amp\Success;
-use LanguageServerProtocol\TextDocumentItem;
+use Phpactor\LanguageServerProtocol\TextDocumentItem;
 use Phpactor\Container\Container;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
-use Phpactor\LanguageServer\Core\Handler\Handler;
+use Phpactor\LanguageServer\Core\Workspace\Workspace;
 use Phpactor\LanguageServer\Core\Server\ClientApi;
-use Phpactor\LanguageServer\Core\Session\Workspace;
+use Phpactor\LanguageServer\Core\Handler\Handler;
 
-class SessionHandler implements Handler
+class DebugHandler implements Handler
 {
+    const METHOD_DEBUG_CONFIG = 'phpactor/debug/config';
+    const METHOD_DEBUG_WORKSPACE = 'phpactor/debug/workspace';
+
     /**
      * @var Container
      */
@@ -41,8 +44,8 @@ class SessionHandler implements Handler
     public function methods(): array
     {
         return [
-            'session/dumpConfig' => 'dumpConfig',
-            'session/dumpWorkspace' => 'dumpWorkspace'
+            self::METHOD_DEBUG_CONFIG => 'dumpConfig',
+            self::METHOD_DEBUG_WORKSPACE => 'dumpWorkspace'
         ];
     }
 

@@ -15,7 +15,7 @@
     "require": {
         "php": "^7.3",
         "phpactor/container": "^1.3.3",
-        "phpactor/language-server": "~0.4",
+        "phpactor/language-server": "^1.0.0",
         "phpactor/console-extension": "~0.1",
         "phpactor/logging-extension": "~0.3.3",
         "phpactor/file-path-resolver-extension": "~0.2",
@@ -54,7 +54,7 @@
     "extra": {
         "phpactor.extension_class": "Phpactor\\Extension\\LanguageServer\\LanguageServerExtension",
         "branch-alias": {
-            "dev-master": "0.4.x-dev"
+            "dev-master": "0.5.x-dev"
         }
     }
 }

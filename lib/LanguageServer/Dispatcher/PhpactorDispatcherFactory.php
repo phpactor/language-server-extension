@@ -1,21 +1,22 @@
 <?php
 
-namespace Phpactor\Extension\LanguageServer\Handler;
+namespace Phpactor\Extension\LanguageServer\Dispatcher;
 
-use LanguageServerProtocol\InitializeParams;
-use Phpactor\Container\Container;
-use Phpactor\Container\PhpactorContainer;
-use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\Extension\LanguageServer\LanguageServerSessionExtension;
+use Phpactor\Container\PhpactorContainer;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
-use Phpactor\LanguageServer\Core\Handler\HandlerLoader;
-use Phpactor\LanguageServer\Core\Handler\Handlers;
+use Phpactor\LanguageServer\Core\Dispatcher\Dispatcher\MiddlewareDispatcher;
 use Phpactor\LanguageServer\Core\Server\Exception\ExitSession;
-use Phpactor\LanguageServer\Core\Server\SessionServices;
+use Phpactor\Container\Container;
 use Phpactor\MapResolver\Resolver;
+use Phpactor\Extension\LanguageServer\LanguageServerExtension;
+use Phpactor\LanguageServerProtocol\InitializeParams;
 use Phpactor\TextDocument\TextDocumentUri;
+use Phpactor\LanguageServer\Core\Dispatcher\Dispatcher;
+use Phpactor\LanguageServer\Core\Dispatcher\DispatcherFactory;
+use Phpactor\LanguageServer\Core\Server\Transmitter\MessageTransmitter;
 
-class PhpactorHandlerLoader implements HandlerLoader
+class PhpactorDispatcherFactory implements DispatcherFactory
 {
     /**
      * @var Container
@@ -27,26 +28,21 @@ class PhpactorHandlerLoader implements HandlerLoader
         $this->container = $container;
     }
 
-    public function load(InitializeParams $params, SessionServices $sessionServices): Handlers
+    public function create(MessageTransmitter $transmitter, InitializeParams $initializeParams): Dispatcher
     {
-        $container = $this->createContainer($params, $sessionServices);
-        $handlers = [];
-
-        foreach (array_keys(
-            $container->getServiceIdsForTag(LanguageServerExtension::TAG_SESSION_HANDLER)
-        ) as $serviceId) {
-            $handlers[] = $container->get($serviceId);
-        }
-
-        return new Handlers($handlers);
+        $container = $this->createContainer($initializeParams, $transmitter);
+        return $this->createContainer(
+            $initializeParams,
+            $transmitter
+        )->get(MiddlewareDispatcher::class);
     }
 
-    protected function createContainer(InitializeParams $params, SessionServices $sessionServices): Container
+    protected function createContainer(InitializeParams $params, MessageTransmitter $transmitter): Container
     {
         $container = $this->container;
         $parameters = $container->getParameters();
         $parameters[FilePathResolverExtension::PARAM_PROJECT_ROOT] = TextDocumentUri::fromString(
-            $this->resolveRootUri($params, $sessionServices)
+            $this->resolveRootUri($params)
         )->path();
 
         $extensionClasses = $container->getParameter(
@@ -58,23 +54,26 @@ class PhpactorHandlerLoader implements HandlerLoader
 
         $container = $this->buildContainer(
             $extensionClasses,
-            array_merge($parameters, $params->initializationOptions, [
-                LanguageServerExtension::PARAM_CLIENT_CAPABILITIES => $params->capabilities
-            ]),
-            $sessionServices
+            array_merge($parameters, $params->initializationOptions ?? []),
+            $transmitter,
+            $params
         );
 
         return $container;
     }
 
-    private function buildContainer(array $extensionClasses, array $parameters, SessionServices $services): Container
-    {
+    private function buildContainer(
+        array $extensionClasses,
+        array $parameters,
+        MessageTransmitter $transmitter,
+        InitializeParams $params
+    ): Container {
         $container = new PhpactorContainer();
 
         $extensions = array_map(function (string $class) {
             return new $class;
         }, $extensionClasses);
-        $extensions[] = new LanguageServerSessionExtension($services);
+        $extensions[] = new LanguageServerSessionExtension($transmitter, $params);
 
         $resolver = new Resolver();
         $resolver->setDefaults([
@@ -93,7 +92,7 @@ class PhpactorHandlerLoader implements HandlerLoader
         return $container->build($parameters);
     }
 
-    private function resolveRootUri(InitializeParams $params, SessionServices $sessionServices): string
+    private function resolveRootUri(InitializeParams $params): string
     {
         if (null === $params->rootUri) {
             throw new ExitSession(
