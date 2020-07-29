@@ -12,36 +12,36 @@ use Phpactor\Extension\LanguageServer\Handler\DebugHandler;
 use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\Console\ConsoleExtension;
 use Phpactor\Extension\LanguageServer\Command\StartCommand;
-use Phpactor\LanguageServer\Adapter\DTL\DTLArgumentResolver;
-use Phpactor\LanguageServer\Core\Dispatcher\ArgumentResolver;
-use Phpactor\LanguageServer\Core\Dispatcher\ArgumentResolver\ChainArgumentResolver;
-use Phpactor\LanguageServer\Core\Dispatcher\ArgumentResolver\LanguageSeverProtocolParamsResolver;
-use Phpactor\LanguageServer\Core\Handler\HandlerMethodRunner;
-use Phpactor\LanguageServer\Core\Handler\MethodRunner;
-use Phpactor\LanguageServer\Core\Handler\Handlers;
-use Phpactor\LanguageServer\Core\Dispatcher\Dispatcher\MiddlewareDispatcher;
-use Phpactor\LanguageServer\Core\Server\ClientApi;
-use Phpactor\LanguageServer\Core\Server\ResponseWatcher;
-use Phpactor\LanguageServer\Core\Server\ServerStats;
-use Phpactor\LanguageServer\Core\Service\ServiceListener;
-use Phpactor\LanguageServer\Core\Service\ServiceProvider;
-use Phpactor\LanguageServer\Core\Service\ServiceProviders;
-use Phpactor\LanguageServer\Core\Service\ServiceManager;
-use Phpactor\LanguageServer\Core\Session\Workspace;
 use Phpactor\LanguageServer\Handler\System\ExitHandler;
 use Phpactor\LanguageServer\Handler\System\StatsHandler;
+use Phpactor\LanguageServer\Handler\TextDocument\TextDocumentHandler;
+use Phpactor\LanguageServer\Core\Handler\HandlerMethodRunner;
+use Phpactor\LanguageServer\Adapter\DTL\DTLArgumentResolver;
+use Phpactor\LanguageServer\Core\Dispatcher\ArgumentResolver\LanguageSeverProtocolParamsResolver;
+use Phpactor\LanguageServer\Core\Dispatcher\ArgumentResolver\ChainArgumentResolver;
+use Phpactor\LanguageServer\Core\Dispatcher\ArgumentResolver;
 use Phpactor\LanguageServer\Middleware\HandlerMiddleware;
-use Phpactor\LanguageServer\Core\Session\WorkspaceListener;
+use Phpactor\LanguageServer\Core\Server\ResponseWatcher;
+use Phpactor\LanguageServer\Middleware\ResponseHandlingMiddleware;
+use Phpactor\LanguageServer\Middleware\MethodAliasMiddleware;
+use Phpactor\LanguageServer\Core\Handler\MethodRunner;
 use Phpactor\LanguageServer\Middleware\CancellationMiddleware;
-use Phpactor\LanguageServer\Handler\System\ServiceHandler;
+use Phpactor\LanguageServer\Core\Handler\Handlers;
 use Phpactor\LanguageServer\Middleware\InitializeMiddleware;
 use Phpactor\LanguageServer\Middleware\ErrorHandlingMiddleware;
-use Phpactor\LanguageServer\Handler\TextDocument\TextDocumentHandler;
-use Phpactor\LanguageServer\Handler\Workspace\CommandHandler;
-use Phpactor\LanguageServer\LanguageServerBuilder;
-use Phpactor\LanguageServer\Middleware\MethodAliasMiddleware;
-use Phpactor\LanguageServer\Middleware\ResponseHandlingMiddleware;
+use Phpactor\LanguageServer\Core\Dispatcher\Dispatcher\MiddlewareDispatcher;
+use Phpactor\LanguageServer\Core\Service\ServiceProvider;
+use Phpactor\LanguageServer\Core\Service\ServiceProviders;
+use Phpactor\LanguageServer\Listener\ServiceListener;
 use Phpactor\LanguageServer\Workspace\CommandDispatcher;
+use Phpactor\LanguageServer\Handler\Workspace\CommandHandler;
+use Phpactor\LanguageServer\Core\Service\ServiceManager;
+use Phpactor\LanguageServer\Handler\System\ServiceHandler;
+use Phpactor\LanguageServer\Core\Server\ClientApi;
+use Phpactor\LanguageServer\Listener\WorkspaceListener;
+use Phpactor\LanguageServer\Core\Workspace\Workspace;
+use Phpactor\LanguageServer\LanguageServerBuilder;
+use Phpactor\LanguageServer\Core\Server\ServerStats;
 use Phpactor\MapResolver\Resolver;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;
@@ -218,7 +218,7 @@ EOT
                 $providers[] = $provider;
             }
 
-            return new ServiceProviders($providers);
+            return new ServiceProviders(...$providers);
         });
     }
 
@@ -276,7 +276,7 @@ EOT
                 $handlers[] = $container->get($serviceId);
             }
         
-            return new Handlers($handlers);
+            return new Handlers(...$handlers);
         });
 
         $container->register(TextDocumentHandler::class, function (Container $container) {

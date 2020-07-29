@@ -6,7 +6,7 @@ use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\LanguageServerProtocol\InitializeParams;
 use Phpactor\LanguageServer\Core\Rpc\NotificationMessage;
 use Phpactor\LanguageServer\Core\Server\Exception\ExitSession;
-use Phpactor\LanguageServer\Core\Session\WorkspaceListener;
+use Phpactor\LanguageServer\Listener\WorkspaceListener;
 use function Amp\Promise\wait;
 use function Amp\delay;
 

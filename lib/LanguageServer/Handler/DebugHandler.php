@@ -7,9 +7,9 @@ use Amp\Success;
 use Phpactor\LanguageServerProtocol\TextDocumentItem;
 use Phpactor\Container\Container;
 use Phpactor\FilePathResolverExtension\FilePathResolverExtension;
-use Phpactor\LanguageServer\Core\Handler\Handler;
+use Phpactor\LanguageServer\Core\Workspace\Workspace;
 use Phpactor\LanguageServer\Core\Server\ClientApi;
-use Phpactor\LanguageServer\Core\Session\Workspace;
+use Phpactor\LanguageServer\Core\Handler\Handler;
 
 class DebugHandler implements Handler
 {
