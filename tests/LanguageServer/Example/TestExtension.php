@@ -4,11 +4,18 @@ namespace Phpactor\Extension\LanguageServer\Tests\Example;
 
 use Amp\Promise;
 use Amp\Success;
+use Generator;
+use Phpactor\LanguageServerProtocol\Command;
+use Phpactor\LanguageServerProtocol\CodeAction;
 use Phpactor\LanguageServerProtocol\MessageType;
 use Phpactor\Container\Container;
 use Phpactor\Container\ContainerBuilder;
 use Phpactor\Container\Extension;
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
+use Phpactor\LanguageServerProtocol\Range;
+use Phpactor\LanguageServerProtocol\TextDocumentItem;
+use Phpactor\LanguageServer\Core\CodeAction\CodeActionProvider;
+use Phpactor\LanguageServer\Core\Command\Command as CoreCommand;
 use Phpactor\LanguageServer\Core\Handler\Handler;
 use Phpactor\LanguageServer\Core\Rpc\NotificationMessage;
 use Phpactor\LanguageServer\Core\Server\ClientApi;
@@ -64,7 +71,7 @@ class TestExtension implements Extension
         }, [ LanguageServerExtension::TAG_SERVICE_PROVIDER => []]);
 
         $container->register('test.command', function (Container $container) {
-            return new class {
+            return new class implements CoreCommand {
                 public function __invoke(string $text): Promise
                 {
                     return new Success($text);
@@ -75,6 +82,35 @@ class TestExtension implements Extension
                 'name' => 'echo',
             ],
         ]);
+
+        $container->register('test.code_action_provider', function (Container $container) {
+            return new class implements CodeActionProvider {
+                public function provideActionsFor(TextDocumentItem $textDocument, Range $range): Generator
+                {
+                    yield CodeAction::fromArray([
+                        'title' => 'Alice',
+                        'command' => new Command('Hello Alice', 'phpactor.say_hello', [
+                            'Alice',
+                        ])
+                    ]);
+
+                    yield CodeAction::fromArray([
+                        'title' => 'Bob',
+                        'command' => new Command('Hello Bob', 'phpactor.say_hello', [
+                            'Bob',
+                        ])
+                    ]);
+                }
+
+                /**
+                 * {@inheritDoc}
+                 */
+                public function kinds(): array
+                {
+                    return ['example'];
+                }
+            };
+        }, [ LanguageServerExtension::TAG_CODE_ACTION_PROVIDER => []]);
     }
 
     /**

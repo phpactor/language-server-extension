@@ -12,8 +12,11 @@ use Phpactor\Extension\LanguageServer\Handler\DebugHandler;
 use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\Console\ConsoleExtension;
 use Phpactor\Extension\LanguageServer\Command\StartCommand;
+use Phpactor\LanguageServer\Core\CodeAction\AggregateCodeActionProvider;
+use Phpactor\LanguageServer\Core\Command\CommandDispatcher;
 use Phpactor\LanguageServer\Handler\System\ExitHandler;
 use Phpactor\LanguageServer\Handler\System\StatsHandler;
+use Phpactor\LanguageServer\Handler\TextDocument\CodeActionHandler;
 use Phpactor\LanguageServer\Handler\TextDocument\TextDocumentHandler;
 use Phpactor\LanguageServer\Core\Handler\HandlerMethodRunner;
 use Phpactor\LanguageServer\Adapter\DTL\DTLArgumentResolver;
@@ -33,7 +36,6 @@ use Phpactor\LanguageServer\Core\Dispatcher\Dispatcher\MiddlewareDispatcher;
 use Phpactor\LanguageServer\Core\Service\ServiceProvider;
 use Phpactor\LanguageServer\Core\Service\ServiceProviders;
 use Phpactor\LanguageServer\Listener\ServiceListener;
-use Phpactor\LanguageServer\Workspace\CommandDispatcher;
 use Phpactor\LanguageServer\Handler\Workspace\CommandHandler;
 use Phpactor\LanguageServer\Core\Service\ServiceManager;
 use Phpactor\LanguageServer\Handler\System\ServiceHandler;
@@ -55,6 +57,7 @@ class LanguageServerExtension implements Extension
     public const TAG_COMMAND = 'language_server.command';
     public const TAG_SERVICE_PROVIDER = 'language_server.service_provider';
     public const TAG_LISTENER_PROVIDER = 'language_server.listener_provider';
+    public const TAG_CODE_ACTION_PROVIDER = 'language_server.code_action_provider';
 
     public const PARAM_SESSION_PARAMETERS = 'language_server.session_parameters';
     public const PARAM_CLIENT_CAPABILITIES = 'language_server.client_capabilities';
@@ -292,6 +295,18 @@ EOT
 
         $container->register(ExitHandler::class, function (Container $container) {
             return new ExitHandler();
+        }, [ self::TAG_METHOD_HANDLER => []]);
+
+        $container->register(CodeActionHandler::class, function (Container $container) {
+            $providers = [];
+            foreach (array_keys($container->getServiceIdsForTag(self::TAG_CODE_ACTION_PROVIDER)) as $serviceId) {
+                $providers[] = $container->get($serviceId);
+            }
+
+            return new CodeActionHandler(
+                new AggregateCodeActionProvider(...$providers),
+                $container->get(self::SERVICE_SESSION_WORKSPACE)
+            );
         }, [ self::TAG_METHOD_HANDLER => []]);
     }
 }

@@ -3,6 +3,7 @@
 namespace Phpactor\Extension\LanguageServer\Tests\Unit;
 
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
+use Phpactor\LanguageServerProtocol\CodeActionRequest;
 use Phpactor\LanguageServerProtocol\InitializeParams;
 use Phpactor\LanguageServer\Core\Rpc\NotificationMessage;
 use Phpactor\LanguageServer\Core\Server\Exception\ExitSession;
@@ -79,6 +80,26 @@ class LanguageServerExtensionTest extends LanguageServerTestCase
         ]);
         $this->assertSuccess($response);
         $this->assertEquals('hello', $response->result);
+    }
+
+    public function testRegistersCodeActionProvider(): void
+    {
+        $serverTester = $this->createTester();
+        $serverTester->textDocument()->open('file://foo', 'bar');
+        $response = $serverTester->requestAndWait(CodeActionRequest::METHOD, [
+            'textDocument' => [
+                'uri' => 'file://foo'
+            ],
+            'range' => [
+                'start' => [ 'line' => 0, 'character' => 0, ],
+                'end' => [ 'line' => 0, 'character' => 0, ],
+            ],
+            'context' => [
+                'diagnostics' => [],
+            ],
+        ]);
+        $this->assertSuccess($response);
+        self::assertCount(2, $response->result);
     }
 
     public function testNullPath(): void
