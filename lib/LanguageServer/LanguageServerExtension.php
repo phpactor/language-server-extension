@@ -318,6 +318,7 @@ EOT
             return new DiagnosticsService($container->get(DiagnosticsEngine::class));
         }, [
             self::TAG_SERVICE_PROVIDER => [],
+            self::TAG_LISTENER_PROVIDER => [],
         ]);
     }
 
