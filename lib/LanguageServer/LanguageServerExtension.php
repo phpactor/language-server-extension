@@ -14,6 +14,9 @@ use Phpactor\Extension\Console\ConsoleExtension;
 use Phpactor\Extension\LanguageServer\Command\StartCommand;
 use Phpactor\LanguageServer\Core\CodeAction\AggregateCodeActionProvider;
 use Phpactor\LanguageServer\Core\Command\CommandDispatcher;
+use Phpactor\LanguageServer\Core\Diagnostics\AggregateDiagnosticsProvider;
+use Phpactor\LanguageServer\Core\Diagnostics\DiagnosticsEngine;
+use Phpactor\LanguageServer\Diagnostics\CodeActionDiagnosticsProvider;
 use Phpactor\LanguageServer\Handler\System\ExitHandler;
 use Phpactor\LanguageServer\Handler\System\StatsHandler;
 use Phpactor\LanguageServer\Handler\TextDocument\CodeActionHandler;
@@ -44,6 +47,7 @@ use Phpactor\LanguageServer\Listener\WorkspaceListener;
 use Phpactor\LanguageServer\Core\Workspace\Workspace;
 use Phpactor\LanguageServer\LanguageServerBuilder;
 use Phpactor\LanguageServer\Core\Server\ServerStats;
+use Phpactor\LanguageServer\Service\DiagnosticsService;
 use Phpactor\MapResolver\Resolver;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;
@@ -58,6 +62,7 @@ class LanguageServerExtension implements Extension
     public const TAG_SERVICE_PROVIDER = 'language_server.service_provider';
     public const TAG_LISTENER_PROVIDER = 'language_server.listener_provider';
     public const TAG_CODE_ACTION_PROVIDER = 'language_server.code_action_provider';
+    public const TAG_DIAGNOSTICS_PROVIDER = 'language_server.diagnostics_provider';
 
     public const PARAM_SESSION_PARAMETERS = 'language_server.session_parameters';
     public const PARAM_CLIENT_CAPABILITIES = 'language_server.client_capabilities';
@@ -97,7 +102,9 @@ EOT
         $this->registerCommandDispatcher($container);
         $this->registerServiceManager($container);
         $this->registerMiddleware($container);
+        $this->registerDiagnostics($container);
         $this->registerHandlers($container);
+        $this->registerServices($container);
     }
 
     private function registerServer(ContainerBuilder $container): void
@@ -298,15 +305,51 @@ EOT
         }, [ self::TAG_METHOD_HANDLER => []]);
 
         $container->register(CodeActionHandler::class, function (Container $container) {
-            $providers = [];
-            foreach (array_keys($container->getServiceIdsForTag(self::TAG_CODE_ACTION_PROVIDER)) as $serviceId) {
-                $providers[] = $container->get($serviceId);
-            }
-
             return new CodeActionHandler(
-                new AggregateCodeActionProvider(...$providers),
+                new AggregateCodeActionProvider(...$this->codeActionProviders($container)),
                 $container->get(self::SERVICE_SESSION_WORKSPACE)
             );
         }, [ self::TAG_METHOD_HANDLER => []]);
+    }
+
+    private function registerServices(ContainerBuilder $container): void
+    {
+        $container->register(DiagnosticsService::class, function (Container $container) {
+            return new DiagnosticsService($container->get(DiagnosticsEngine::class));
+        }, [
+            self::TAG_SERVICE_PROVIDER => [],
+        ]);
+    }
+
+    private function registerDiagnostics(ContainerBuilder $container): void
+    {
+        $container->register(DiagnosticsEngine::class, function (Container $container) {
+            $providers = [];
+            foreach (array_keys($container->getServiceIdsForTag(self::TAG_DIAGNOSTICS_PROVIDER)) as $serviceId) {
+                $providers[] = $container->get($serviceId);
+            }
+
+            return new DiagnosticsEngine(
+                $container->get(ClientApi::class),
+                new AggregateDiagnosticsProvider(...$providers)
+            );
+        });
+
+        $container->register(CodeActionDiagnosticsProvider::class, function (Container $container) {
+            return new CodeActionDiagnosticsProvider(
+                ...$this->codeActionProviders($container)
+            );
+        }, [
+            self::TAG_DIAGNOSTICS_PROVIDER => [],
+        ]);
+    }
+
+    private function codeActionProviders(Container $container): array
+    {
+        $providers = [];
+        foreach (array_keys($container->getServiceIdsForTag(self::TAG_CODE_ACTION_PROVIDER)) as $serviceId) {
+            $providers[] = $container->get($serviceId);
+        }
+        return $providers;
     }
 }

@@ -34,10 +34,13 @@ $container = PhpactorContainer::fromExtensions([
     FilePathResolverExtension::PARAM_PROJECT_ROOT => realpath(__DIR__ . '/..'),
     FilePathResolverExtension::PARAM_APPLICATION_ROOT => realpath(__DIR__ .'/..'),
     LoggingExtension::PARAM_FORMATTER => 'pretty',
+    LoggingExtension::PARAM_LEVEL => 'debug',
+    LoggingExtension::PARAM_ENABLED => true,
 ]);
 
 $handler = new StreamHandler(STDERR);
 $handler->setFormatter($container->get(PrettyFormatter::class));
+$handler->setLevel('debug');
 $container->get(LoggingExtension::SERVICE_LOGGER)->pushHandler($handler);
 
 $application = new Application();
