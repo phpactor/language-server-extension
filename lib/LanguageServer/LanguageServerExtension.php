@@ -62,6 +62,7 @@ class LanguageServerExtension implements Extension
     public const TAG_SERVICE_PROVIDER = 'language_server.service_provider';
     public const TAG_LISTENER_PROVIDER = 'language_server.listener_provider';
     public const TAG_CODE_ACTION_PROVIDER = 'language_server.code_action_provider';
+    public const TAG_CODE_ACTION_DIAGNOSTICS_PROVIDER = 'language_server.code_action_diagnostics_provider';
     public const TAG_DIAGNOSTICS_PROVIDER = 'language_server.diagnostics_provider';
 
     public const PARAM_SESSION_PARAMETERS = 'language_server.session_parameters';
@@ -306,7 +307,7 @@ EOT
 
         $container->register(CodeActionHandler::class, function (Container $container) {
             return new CodeActionHandler(
-                new AggregateCodeActionProvider(...$this->codeActionProviders($container)),
+                new AggregateCodeActionProvider(...$this->taggedServices($container, self::TAG_CODE_ACTION_PROVIDER)),
                 $container->get(self::SERVICE_SESSION_WORKSPACE)
             );
         }, [ self::TAG_METHOD_HANDLER => []]);
@@ -338,17 +339,17 @@ EOT
 
         $container->register(CodeActionDiagnosticsProvider::class, function (Container $container) {
             return new CodeActionDiagnosticsProvider(
-                ...$this->codeActionProviders($container)
+                ...$this->taggedServices($container, self::TAG_CODE_ACTION_DIAGNOSTICS_PROVIDER)
             );
         }, [
             self::TAG_DIAGNOSTICS_PROVIDER => [],
         ]);
     }
 
-    private function codeActionProviders(Container $container): array
+    private function taggedServices(Container $container, string $tag): array
     {
         $providers = [];
-        foreach (array_keys($container->getServiceIdsForTag(self::TAG_CODE_ACTION_PROVIDER)) as $serviceId) {
+        foreach (array_keys($container->getServiceIdsForTag($tag)) as $serviceId) {
             $providers[] = $container->get($serviceId);
         }
         return $providers;
