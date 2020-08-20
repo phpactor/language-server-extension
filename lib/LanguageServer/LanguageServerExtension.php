@@ -70,6 +70,7 @@ class LanguageServerExtension implements Extension
     public const PARAM_ENABLE_WORKPACE = 'language_server.enable_workspace';
     public const PARAM_CATCH_ERRORS = 'language_server.catch_errors';
     public const PARAM_METHOD_ALIAS_MAP = 'language_server.method_alias_map';
+    public const PARAM_DIAGNOSTIC_SLEEP_TIME = 'language_server.diagnostic_sleep_time';
 
     /**
      * {@inheritDoc}
@@ -81,6 +82,7 @@ class LanguageServerExtension implements Extension
             self::PARAM_ENABLE_WORKPACE => true,
             self::PARAM_SESSION_PARAMETERS => [],
             self::PARAM_METHOD_ALIAS_MAP => [],
+            self::PARAM_DIAGNOSTIC_SLEEP_TIME => 1000,
         ]);
         $schema->setDescriptions([
             self::PARAM_METHOD_ALIAS_MAP => 'Allow method names to be re-mapped. Useful for maintaining backwards compatibility',
@@ -336,7 +338,8 @@ EOT
                 new AggregateDiagnosticsProvider(
                     $container->get(LoggingExtension::SERVICE_LOGGER),
                     ...$providers
-                )
+                ),
+                $container->getParameter(self::PARAM_DIAGNOSTIC_SLEEP_TIME)
             );
         });
 
