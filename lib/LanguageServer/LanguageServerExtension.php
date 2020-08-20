@@ -90,6 +90,8 @@ class LanguageServerExtension implements Extension
             self::PARAM_ENABLE_WORKPACE => <<<'EOT'
 If workspace management / text synchronization should be enabled (this isn't required for some language server implementations, e.g. static analyzers)
 EOT
+            , 
+            self::PARAM_DIAGNOSTIC_SLEEP_TIME => 'Amount of time to wait before analyzing the code again for diagnostics',
         ]);
     }
 
