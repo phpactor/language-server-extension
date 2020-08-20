@@ -333,7 +333,10 @@ EOT
 
             return new DiagnosticsEngine(
                 $container->get(ClientApi::class),
-                new AggregateDiagnosticsProvider(...$providers)
+                new AggregateDiagnosticsProvider(
+                    $container->get(LoggingExtension::SERVICE_LOGGER),
+                    ...$providers
+                )
             );
         });
 
