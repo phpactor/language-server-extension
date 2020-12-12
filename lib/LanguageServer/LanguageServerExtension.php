@@ -320,7 +320,10 @@ EOT
     private function registerServices(ContainerBuilder $container): void
     {
         $container->register(DiagnosticsService::class, function (Container $container) {
-            return new DiagnosticsService($container->get(DiagnosticsEngine::class));
+            return new DiagnosticsService(
+                $container->get(DiagnosticsEngine::class),
+                $container->get(self::SERVICE_SESSION_WORKSPACE)
+            );
         }, [
             self::TAG_SERVICE_PROVIDER => [],
             self::TAG_LISTENER_PROVIDER => [],
