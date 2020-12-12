@@ -71,6 +71,8 @@ class LanguageServerExtension implements Extension
     public const PARAM_CATCH_ERRORS = 'language_server.catch_errors';
     public const PARAM_METHOD_ALIAS_MAP = 'language_server.method_alias_map';
     public const PARAM_DIAGNOSTIC_SLEEP_TIME = 'language_server.diagnostic_sleep_time';
+    public const PARAM_DIAGNOSTIC_ON_UPDATE = 'language_server.diagnostics_on_update';
+    public const PARAM_DIAGNOSTIC_ON_SAVE = 'language_server.diagnostics_on_save';
 
     /**
      * {@inheritDoc}
@@ -83,6 +85,8 @@ class LanguageServerExtension implements Extension
             self::PARAM_SESSION_PARAMETERS => [],
             self::PARAM_METHOD_ALIAS_MAP => [],
             self::PARAM_DIAGNOSTIC_SLEEP_TIME => 1000,
+            self::PARAM_DIAGNOSTIC_ON_UPDATE => false,
+            self::PARAM_DIAGNOSTIC_ON_SAVE => false,
         ]);
         $schema->setDescriptions([
             self::PARAM_METHOD_ALIAS_MAP => 'Allow method names to be re-mapped. Useful for maintaining backwards compatibility',
@@ -90,8 +94,10 @@ class LanguageServerExtension implements Extension
             self::PARAM_ENABLE_WORKPACE => <<<'EOT'
 If workspace management / text synchronization should be enabled (this isn't required for some language server implementations, e.g. static analyzers)
 EOT
-            , 
+            ,
             self::PARAM_DIAGNOSTIC_SLEEP_TIME => 'Amount of time to wait before analyzing the code again for diagnostics',
+            self::PARAM_DIAGNOSTIC_ON_UPDATE => 'Perform diagnostics when the text document is updated',
+            self::PARAM_DIAGNOSTIC_ON_SAVE => 'Perform diagnostics when the text document is saved',
         ]);
     }
 
@@ -322,6 +328,8 @@ EOT
         $container->register(DiagnosticsService::class, function (Container $container) {
             return new DiagnosticsService(
                 $container->get(DiagnosticsEngine::class),
+                $container->getParameter(self::PARAM_DIAGNOSTIC_ON_UPDATE),
+                $container->getParameter(self::PARAM_DIAGNOSTIC_ON_SAVE),
                 $container->get(self::SERVICE_SESSION_WORKSPACE)
             );
         }, [

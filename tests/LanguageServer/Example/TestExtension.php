@@ -4,7 +4,6 @@ namespace Phpactor\Extension\LanguageServer\Tests\Example;
 
 use Amp\Promise;
 use Amp\Success;
-use Generator;
 use Phpactor\LanguageServerProtocol\Command;
 use Phpactor\LanguageServerProtocol\CodeAction;
 use Phpactor\LanguageServerProtocol\MessageType;
