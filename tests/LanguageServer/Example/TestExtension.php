@@ -85,19 +85,20 @@ class TestExtension implements Extension
 
         $container->register('test.code_action_provider', function (Container $container) {
             return new class implements CodeActionProvider {
-                public function provideActionsFor(TextDocumentItem $textDocument, Range $range): Generator
+                public function provideActionsFor(TextDocumentItem $textDocument, Range $range): Promise
                 {
-                    yield CodeAction::fromArray([
-                        'title' => 'Alice',
-                        'command' => new Command('Hello Alice', 'phpactor.say_hello', [
-                            'Alice',
-                        ])
-                    ]);
-
-                    yield CodeAction::fromArray([
-                        'title' => 'Bob',
-                        'command' => new Command('Hello Bob', 'phpactor.say_hello', [
-                            'Bob',
+                    return new Success([
+                        CodeAction::fromArray([
+                            'title' => 'Alice',
+                            'command' => new Command('Hello Alice', 'phpactor.say_hello', [
+                                'Alice',
+                            ])
+                        ]),
+                        CodeAction::fromArray([
+                            'title' => 'Bob',
+                            'command' => new Command('Hello Bob', 'phpactor.say_hello', [
+                                'Bob',
+                            ])
                         ])
                     ]);
                 }
