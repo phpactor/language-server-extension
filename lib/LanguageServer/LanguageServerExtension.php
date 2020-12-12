@@ -86,7 +86,7 @@ class LanguageServerExtension implements Extension
             self::PARAM_METHOD_ALIAS_MAP => [],
             self::PARAM_DIAGNOSTIC_SLEEP_TIME => 1000,
             self::PARAM_DIAGNOSTIC_ON_UPDATE => false,
-            self::PARAM_DIAGNOSTIC_ON_SAVE => false,
+            self::PARAM_DIAGNOSTIC_ON_SAVE => true,
         ]);
         $schema->setDescriptions([
             self::PARAM_METHOD_ALIAS_MAP => 'Allow method names to be re-mapped. Useful for maintaining backwards compatibility',
