@@ -12,7 +12,7 @@ class StartCommandTest extends LanguageServerTestCase
      */
     private $tester;
 
-    protected function setUp(): void
+    protected function setUp(): void: void
     {
         $container = $this->createContainer([]);
         $this->tester = new CommandTester($container->get('language_server.command.lsp_start'));
