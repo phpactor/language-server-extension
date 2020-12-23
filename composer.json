@@ -1,10 +1,8 @@
 {
     "name": "phpactor/language-server-extension",
+    "type": "phpactor-extension",
     "description": "Provides an (experimental) LSP compatible Language Server Platform",
     "license": "MIT",
-    "type": "phpactor-extension",
-    "prefer-stable": true,
-    "minimum-stability": "dev",
     "authors": [
         {
             "name": "Daniel Leech",
@@ -13,21 +11,28 @@
     ],
     "require": {
         "php": "^7.3",
-        "phpactor/container": "^1.3.3",
-        "phpactor/language-server": "^1.0.0",
+        "phly/phly-event-dispatcher": "^1.0",
         "phpactor/console-extension": "~0.1",
-        "phpactor/logging-extension": "~0.3.3",
+        "phpactor/container": "^1.3.3",
         "phpactor/file-path-resolver-extension": "~0.2",
-        "phpactor/text-document": "^1.1",
-        "phly/phly-event-dispatcher": "^1.0"
+        "phpactor/language-server": "^1.0.0",
+        "phpactor/logging-extension": "~0.3.3",
+        "phpactor/text-document": "^1.1"
     },
     "require-dev": {
+        "dms/phpunit-arraysubset-asserts": "dev-master",
+        "ergebnis/composer-normalize": "^2.0",
+        "friendsofphp/php-cs-fixer": "^2.17",
+        "phpactor/test-utils": "^1.1",
         "phpspec/prophecy-phpunit": "^2.0",
         "phpstan/phpstan": "~0.12.0",
-        "phpunit/phpunit": "^9.0",
-        "phpactor/test-utils": "^1.1",
-        "dms/phpunit-arraysubset-asserts": "dev-master",
-        "friendsofphp/php-cs-fixer": "^2.13"
+        "phpunit/phpunit": "^9.0"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.5.x-dev"
+        },
+        "phpactor.extension_class": "Phpactor\\Extension\\LanguageServer\\LanguageServerExtension"
     },
     "autoload": {
         "psr-4": {
@@ -43,17 +48,13 @@
             "Phpactor\\Extension\\LanguageServerWorseReflection\\Tests\\": "tests/LanguageServerWorseReflection/"
         }
     },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "scripts": {
         "integrate": [
             "./vendor/bin/phpunit",
             "./vendor/bin/phpstan analyze",
             "./vendor/bin/php-cs-fixer fix"
         ]
-    },
-    "extra": {
-        "phpactor.extension_class": "Phpactor\\Extension\\LanguageServer\\LanguageServerExtension",
-        "branch-alias": {
-            "dev-master": "0.5.x-dev"
-        }
     }
 }
