@@ -38,9 +38,9 @@ class LanguageServerTestCase extends TestCase
         ], $params));
     }
 
-    protected function createTester(?InitializeParams $params = null): LanguageServerTester
+    protected function createTester(?InitializeParams $params = null, array $config = []): LanguageServerTester
     {
-        $builder = $this->createContainer()->get(
+        $builder = $this->createContainer($config)->get(
             LanguageServerBuilder::class
         );
         

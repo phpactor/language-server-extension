@@ -8,6 +8,7 @@ use Phpactor\LanguageServerProtocol\InitializeParams;
 use Phpactor\LanguageServer\Core\Rpc\NotificationMessage;
 use Phpactor\LanguageServer\Core\Server\Exception\ExitSession;
 use Phpactor\LanguageServer\Listener\WorkspaceListener;
+use RuntimeException;
 use function Amp\Promise\wait;
 use function Amp\delay;
 
@@ -123,5 +124,25 @@ class LanguageServerExtensionTest extends LanguageServerTestCase
             LanguageServerExtension::PARAM_ENABLE_WORKPACE => false,
         ]);
         self::assertNull($container->get(WorkspaceListener::class));
+    }
+
+    public function testExceptionWhenEnablingUnknownDiagProvider(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Unknown diagnostic');
+        $serverTester = $this->createTester(null, [
+            LanguageServerExtension::PARAM_DIAGNOSTIC_PROVIDERS => ['asd'],
+        ]);
+        $serverTester->initialize();
+    }
+
+    public function testFilterDiagnosticProviders(): void
+    {
+        $serverTester = $this->createTester(null, [
+            LanguageServerExtension::PARAM_DIAGNOSTIC_PROVIDERS => [
+                'code-action'
+            ],
+        ]);
+        $serverTester->initialize();
     }
 }

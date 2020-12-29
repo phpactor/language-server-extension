@@ -51,6 +51,7 @@ use Phpactor\LanguageServer\Service\DiagnosticsService;
 use Phpactor\MapResolver\Resolver;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;
+use Webmozart\Assert\Assert;
 
 class LanguageServerExtension implements Extension
 {
@@ -73,6 +74,7 @@ class LanguageServerExtension implements Extension
     public const PARAM_DIAGNOSTIC_SLEEP_TIME = 'language_server.diagnostic_sleep_time';
     public const PARAM_DIAGNOSTIC_ON_UPDATE = 'language_server.diagnostics_on_update';
     public const PARAM_DIAGNOSTIC_ON_SAVE = 'language_server.diagnostics_on_save';
+    public const PARAM_DIAGNOSTIC_PROVIDERS = 'language_server.diagnostic_providers';
 
     /**
      * {@inheritDoc}
@@ -87,6 +89,7 @@ class LanguageServerExtension implements Extension
             self::PARAM_DIAGNOSTIC_SLEEP_TIME => 1000,
             self::PARAM_DIAGNOSTIC_ON_UPDATE => false,
             self::PARAM_DIAGNOSTIC_ON_SAVE => true,
+            self::PARAM_DIAGNOSTIC_PROVIDERS => null,
         ]);
         $schema->setDescriptions([
             self::PARAM_METHOD_ALIAS_MAP => 'Allow method names to be re-mapped. Useful for maintaining backwards compatibility',
@@ -98,6 +101,7 @@ EOT
             self::PARAM_DIAGNOSTIC_SLEEP_TIME => 'Amount of time to wait before analyzing the code again for diagnostics',
             self::PARAM_DIAGNOSTIC_ON_UPDATE => 'Perform diagnostics when the text document is updated',
             self::PARAM_DIAGNOSTIC_ON_SAVE => 'Perform diagnostics when the text document is saved',
+            self::PARAM_DIAGNOSTIC_PROVIDERS => 'Specify which diagnostic providers should be active (default to all)',
         ]);
     }
 
@@ -342,15 +346,30 @@ EOT
     {
         $container->register(DiagnosticsEngine::class, function (Container $container) {
             $providers = [];
-            foreach (array_keys($container->getServiceIdsForTag(self::TAG_DIAGNOSTICS_PROVIDER)) as $serviceId) {
-                $providers[] = $container->get($serviceId);
+            foreach ($container->getServiceIdsForTag(self::TAG_DIAGNOSTICS_PROVIDER) as $serviceId => $attrs) {
+                Assert::isArray($attrs, 'Attributes must be an array, got "%s"');
+                $providers[$attrs['name'] ?? $serviceId] = $container->get($serviceId);
+            }
+
+            $enabled = $container->getParameter(self::PARAM_DIAGNOSTIC_PROVIDERS);
+
+            if (null !== $enabled) {
+                Assert::isArray($enabled);
+                if ($diff = array_diff($enabled, array_keys($providers))) {
+                    throw new RuntimeException(sprintf(
+                        'Unknown diagnostic provider(s) "%s", known providers: "%s"',
+                        implode('", "', $diff),
+                        implode('", "', array_keys($providers))
+                    ));
+                }
+                $providers = array_intersect_key($providers, array_flip($enabled));
             }
 
             return new DiagnosticsEngine(
                 $container->get(ClientApi::class),
                 new AggregateDiagnosticsProvider(
                     $container->get(LoggingExtension::SERVICE_LOGGER),
-                    ...$providers
+                    ...array_values($providers)
                 ),
                 $container->getParameter(self::PARAM_DIAGNOSTIC_SLEEP_TIME)
             );
@@ -361,7 +380,9 @@ EOT
                 ...$this->taggedServices($container, self::TAG_CODE_ACTION_DIAGNOSTICS_PROVIDER)
             );
         }, [
-            self::TAG_DIAGNOSTICS_PROVIDER => [],
+            self::TAG_DIAGNOSTICS_PROVIDER => [
+                'name' => 'code-action'
+            ],
         ]);
     }
 
