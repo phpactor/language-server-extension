@@ -5,3 +5,4 @@
 /phpbench.json
 /composer.lock
 /.php_cs.cache
+/.vscode
