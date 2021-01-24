@@ -79,7 +79,7 @@ class LanguageServerExtension implements Extension
     /**
      * {@inheritDoc}
      */
-    public function configure(Resolver $schema)
+    public function configure(Resolver $schema): void
     {
         $schema->setDefaults([
             self::PARAM_CATCH_ERRORS => true,
@@ -95,8 +95,8 @@ class LanguageServerExtension implements Extension
             self::PARAM_METHOD_ALIAS_MAP => 'Allow method names to be re-mapped. Useful for maintaining backwards compatibility',
             self::PARAM_SESSION_PARAMETERS => 'Phpactor parameters (config) that apply only to the language server session',
             self::PARAM_ENABLE_WORKPACE => <<<'EOT'
-If workspace management / text synchronization should be enabled (this isn't required for some language server implementations, e.g. static analyzers)
-EOT
+                If workspace management / text synchronization should be enabled (this isn't required for some language server implementations, e.g. static analyzers)
+                EOT
             ,
             self::PARAM_DIAGNOSTIC_SLEEP_TIME => 'Amount of time to wait before analyzing the code again for diagnostics',
             self::PARAM_DIAGNOSTIC_ON_UPDATE => 'Perform diagnostics when the text document is updated',
@@ -108,7 +108,7 @@ EOT
     /**
      * {@inheritDoc}
      */
-    public function load(ContainerBuilder $container)
+    public function load(ContainerBuilder $container): void
     {
         $this->registerServer($container);
         $this->registerCommand($container);

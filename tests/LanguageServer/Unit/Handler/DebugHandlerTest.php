@@ -14,7 +14,7 @@ class DebugHandlerTest extends LanguageServerTestCase
         $this->assertSuccess($response);
     }
 
-    public function testDumpWorkspace()
+    public function testDumpWorkspace(): void
     {
         $tester = $this->createTester();
         $response = $tester->requestAndWait(DebugHandler::METHOD_DEBUG_WORKSPACE, []);
