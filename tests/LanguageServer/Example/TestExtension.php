@@ -26,7 +26,7 @@ class TestExtension implements Extension
     /**
      * {@inheritDoc}
      */
-    public function load(ContainerBuilder $container)
+    public function load(ContainerBuilder $container): void
     {
         $container->register('test.handler', function (Container $container) {
             return new class implements Handler {
@@ -116,7 +116,7 @@ class TestExtension implements Extension
     /**
      * {@inheritDoc}
      */
-    public function configure(Resolver $schema)
+    public function configure(Resolver $schema): void
     {
     }
 }
