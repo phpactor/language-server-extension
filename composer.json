@@ -10,20 +10,20 @@
         }
     ],
     "require": {
-        "php": "^7.3",
-        "phpactor/phly-event-dispatcher": "^2.0",
-        "phpactor/console-extension": "~0.1",
-        "phpactor/container": "^1.3.3",
-        "phpactor/file-path-resolver-extension": "~0.2",
+        "php": "^7.3 || ^8.0",
+        "phpactor/phly-event-dispatcher": "^2.0.0",
+        "phpactor/console-extension": "^0.1.6",
+        "phpactor/container": "^1.3.4",
+        "phpactor/file-path-resolver-extension": "^0.3.4",
         "phpactor/language-server": "^1.0.0",
-        "phpactor/logging-extension": "~0.3.3",
-        "phpactor/text-document": "^1.1"
+        "phpactor/logging-extension": "^0.3.4",
+        "phpactor/text-document": "^1.2.3"
     },
     "require-dev": {
         "dms/phpunit-arraysubset-asserts": "dev-master",
         "ergebnis/composer-normalize": "^2.0",
         "friendsofphp/php-cs-fixer": "^2.17",
-        "phpactor/test-utils": "^1.1",
+        "phpactor/test-utils": "^1.1.3",
         "phpspec/prophecy-phpunit": "^2.0",
         "phpstan/phpstan": "~0.12.0",
         "phpunit/phpunit": "^9.0"
