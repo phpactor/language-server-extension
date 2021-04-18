@@ -26,6 +26,7 @@ use Phpactor\LanguageServer\Adapter\DTL\DTLArgumentResolver;
 use Phpactor\LanguageServer\Core\Dispatcher\ArgumentResolver\LanguageSeverProtocolParamsResolver;
 use Phpactor\LanguageServer\Core\Dispatcher\ArgumentResolver\ChainArgumentResolver;
 use Phpactor\LanguageServer\Core\Dispatcher\ArgumentResolver;
+use Phpactor\LanguageServer\Handler\Workspace\DidChangeWatchedFilesHandler;
 use Phpactor\LanguageServer\Listener\DidChangeWatchedFilesListener;
 use Phpactor\LanguageServer\Middleware\HandlerMiddleware;
 use Phpactor\LanguageServer\Core\Server\ResponseWatcher;
@@ -194,6 +195,12 @@ class LanguageServerExtension implements Extension
         $container->register(CommandHandler::class, function (Container $container) {
             return new CommandHandler($container->get(CommandDispatcher::class));
         }, [ self::TAG_METHOD_HANDLER => []]);
+
+        $container->register(DidChangeWatchedFilesHandler::class, function (Container $container) {
+            return new DidChangeWatchedFilesHandler($container->get(EventDispatcherInterface::class));
+        }, [
+            self::TAG_METHOD_HANDLER => [],
+        ]);
     }
 
     private function registerEventDispatcher(ContainerBuilder $container): void

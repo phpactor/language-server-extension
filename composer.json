@@ -54,7 +54,7 @@
         "integrate": [
             "./vendor/bin/phpunit",
             "./vendor/bin/phpstan analyze",
-            "./vendor/bin/php-cs-fixer fix"
+            "./vendor/bin/php-cs-fixer fix --allow-risky=yes"
         ]
     }
 }
