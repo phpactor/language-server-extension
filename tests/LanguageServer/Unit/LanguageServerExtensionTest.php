@@ -6,6 +6,7 @@ use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\LanguageServerProtocol\CodeActionRequest;
 use Phpactor\LanguageServerProtocol\InitializeParams;
 use Phpactor\LanguageServer\Core\Rpc\NotificationMessage;
+use Phpactor\LanguageServer\Core\Rpc\RequestMessage;
 use Phpactor\LanguageServer\Core\Server\Exception\ExitSession;
 use Phpactor\LanguageServer\Listener\WorkspaceListener;
 use RuntimeException;
@@ -45,7 +46,9 @@ class LanguageServerExtensionTest extends LanguageServerTestCase
 
     public function testStartsServices(): void
     {
-        $serverTester = $this->createTester();
+        $serverTester = $this->createTester(null, [
+            LanguageServerExtension::PARAM_FILE_EVENTS =>false,
+        ]);
         $serverTester->initialize();
         wait(delay(10));
         $message = $serverTester->transmitter()->shift();
@@ -144,5 +147,18 @@ class LanguageServerExtensionTest extends LanguageServerTestCase
             ],
         ]);
         $serverTester->initialize();
+    }
+
+    public function testEnableFileEvents(): void
+    {
+        $serverTester = $this->createTester(null, [
+            LanguageServerExtension::PARAM_FILE_EVENTS => true
+        ]);
+        $serverTester->initialize();
+        wait(delay(10));
+        $message = $serverTester->transmitter()->shift();
+        self::assertNotNull($message);
+        assert($message instanceof RequestMessage);
+        self::assertEquals('client/registerCapability', $message->method);
     }
 }

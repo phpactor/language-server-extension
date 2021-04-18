@@ -26,6 +26,7 @@ use Phpactor\LanguageServer\Adapter\DTL\DTLArgumentResolver;
 use Phpactor\LanguageServer\Core\Dispatcher\ArgumentResolver\LanguageSeverProtocolParamsResolver;
 use Phpactor\LanguageServer\Core\Dispatcher\ArgumentResolver\ChainArgumentResolver;
 use Phpactor\LanguageServer\Core\Dispatcher\ArgumentResolver;
+use Phpactor\LanguageServer\Listener\DidChangeWatchedFilesListener;
 use Phpactor\LanguageServer\Middleware\HandlerMiddleware;
 use Phpactor\LanguageServer\Core\Server\ResponseWatcher;
 use Phpactor\LanguageServer\Middleware\ResponseHandlingMiddleware;
@@ -75,6 +76,8 @@ class LanguageServerExtension implements Extension
     public const PARAM_DIAGNOSTIC_ON_UPDATE = 'language_server.diagnostics_on_update';
     public const PARAM_DIAGNOSTIC_ON_SAVE = 'language_server.diagnostics_on_save';
     public const PARAM_DIAGNOSTIC_PROVIDERS = 'language_server.diagnostic_providers';
+    public const PARAM_FILE_EVENTS = 'language_server,file_events';
+    public const PARAM_FILE_EVENT_GLOBS = 'language_server.file_event_globs';
 
     /**
      * {@inheritDoc}
@@ -90,6 +93,8 @@ class LanguageServerExtension implements Extension
             self::PARAM_DIAGNOSTIC_ON_UPDATE => false,
             self::PARAM_DIAGNOSTIC_ON_SAVE => true,
             self::PARAM_DIAGNOSTIC_PROVIDERS => null,
+            self::PARAM_FILE_EVENTS => true,
+            self::PARAM_FILE_EVENT_GLOBS => ['**/*.php'],
         ]);
         $schema->setDescriptions([
             self::PARAM_METHOD_ALIAS_MAP => 'Allow method names to be re-mapped. Useful for maintaining backwards compatibility',
@@ -102,6 +107,7 @@ class LanguageServerExtension implements Extension
             self::PARAM_DIAGNOSTIC_ON_UPDATE => 'Perform diagnostics when the text document is updated',
             self::PARAM_DIAGNOSTIC_ON_SAVE => 'Perform diagnostics when the text document is saved',
             self::PARAM_DIAGNOSTIC_PROVIDERS => 'Specify which diagnostic providers should be active (default to all)',
+            self::PARAM_FILE_EVENTS => 'Register to recieve file events',
         ]);
     }
 
@@ -167,6 +173,12 @@ class LanguageServerExtension implements Extension
             self::TAG_LISTENER_PROVIDER => [],
         ]);
 
+        $container->register(DidChangeWatchedFilesListener::class, function (Container $container) {
+            return new DidChangeWatchedFilesListener($container->get(ClientApi::class), $container->getParameter(self::PARAM_FILE_EVENT_GLOBS));
+        }, [
+            self::TAG_LISTENER_PROVIDER => [],
+        ]);
+
         $container->register('language_server.session.handler.session', function (Container $container) {
             return new DebugHandler(
                 $container,
@@ -189,7 +201,7 @@ class LanguageServerExtension implements Extension
         $container->register(EventDispatcherInterface::class, function (Container $container) {
             $aggregate = new LazyAggregateProvider(
                 $container,
-                array_keys($container->getServiceIdsForTag(self::TAG_LISTENER_PROVIDER))
+                $this->resolveListeners($container)
             );
 
             return new EventDispatcher($aggregate);
@@ -393,5 +405,18 @@ class LanguageServerExtension implements Extension
             $providers[] = $container->get($serviceId);
         }
         return $providers;
+    }
+
+    /**
+     * @return string[]
+     */
+    private function resolveListeners(Container $container): array
+    {
+        return array_filter(array_keys($container->getServiceIdsForTag(self::TAG_LISTENER_PROVIDER)), function (string $service) use ($container) {
+            if (false === $container->getParameter(self::PARAM_FILE_EVENTS) && $service === DidChangeWatchedFilesListener::class) {
+                return false;
+            }
+            return true;
+        });
     }
 }
