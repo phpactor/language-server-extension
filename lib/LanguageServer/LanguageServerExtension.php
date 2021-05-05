@@ -179,7 +179,7 @@ class LanguageServerExtension implements Extension
         $container->register(InvalidConfigListener::class, function (Container $container) {
             return new InvalidConfigListener(
                 $container->get(ClientApi::class),
-                $container->get(ResolverErrors::class)
+                $container->has(ResolverErrors::class) ? $container->get(ResolverErrors::class) : new ResolverErrors([])
             );
         }, [
             self::TAG_LISTENER_PROVIDER => [],
