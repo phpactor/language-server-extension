@@ -40,6 +40,9 @@ class InvalidConfigListener implements ListenerProviderInterface
         return [];
     }
 
+    /**
+     * @return Success<null>
+     */
     public function handleInvalidConfig(): Promise
     {
         if ($this->errors->errors()) {
