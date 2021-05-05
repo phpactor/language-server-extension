@@ -84,10 +84,11 @@ class PhpactorDispatcherFactory implements DispatcherFactory
             $extension->configure($resolver);
         }
 
+        $parameters = $resolver->resolve($parameters);
+
         $container->register(ResolverErrors::class, function () use ($resolver) {
             return $resolver->errors();
         });
-        $parameters = $resolver->resolve($parameters);
 
         foreach ($extensions as $extension) {
             $extension->load($container);

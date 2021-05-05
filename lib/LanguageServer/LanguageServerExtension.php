@@ -9,6 +9,7 @@ use Phpactor\Container\Extension;
 use Phpactor\Extension\LanguageServer\Dispatcher\PhpactorDispatcherFactory;
 use Phpactor\Extension\LanguageServer\EventDispatcher\LazyAggregateProvider;
 use Phpactor\Extension\LanguageServer\Handler\DebugHandler;
+use Phpactor\Extension\LanguageServer\Listener\InvalidConfigListener;
 use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\Console\ConsoleExtension;
 use Phpactor\Extension\LanguageServer\Command\StartCommand;
@@ -51,6 +52,7 @@ use Phpactor\LanguageServer\LanguageServerBuilder;
 use Phpactor\LanguageServer\Core\Server\ServerStats;
 use Phpactor\LanguageServer\Service\DiagnosticsService;
 use Phpactor\MapResolver\Resolver;
+use Phpactor\MapResolver\ResolverErrors;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;
 use Webmozart\Assert\Assert;
@@ -170,6 +172,15 @@ class LanguageServerExtension implements Extension
             }
 
             return new WorkspaceListener($container->get(self::SERVICE_SESSION_WORKSPACE));
+        }, [
+            self::TAG_LISTENER_PROVIDER => [],
+        ]);
+
+        $container->register(InvalidConfigListener::class, function (Container $container) {
+            return new InvalidConfigListener(
+                $container->get(ClientApi::class),
+                $container->get(ResolverErrors::class)
+            );
         }, [
             self::TAG_LISTENER_PROVIDER => [],
         ]);
