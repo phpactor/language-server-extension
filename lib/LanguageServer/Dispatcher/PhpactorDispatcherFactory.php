@@ -11,6 +11,7 @@ use Phpactor\Container\Container;
 use Phpactor\MapResolver\Resolver;
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\LanguageServerProtocol\InitializeParams;
+use Phpactor\MapResolver\ResolverErrors;
 use Phpactor\TextDocument\TextDocumentUri;
 use Phpactor\LanguageServer\Core\Dispatcher\Dispatcher;
 use Phpactor\LanguageServer\Core\Dispatcher\DispatcherFactory;
@@ -75,7 +76,7 @@ class PhpactorDispatcherFactory implements DispatcherFactory
         }, $extensionClasses);
         $extensions[] = new LanguageServerSessionExtension($transmitter, $params);
 
-        $resolver = new Resolver();
+        $resolver = new Resolver(true);
         $resolver->setDefaults([
             PhpactorContainer::PARAM_EXTENSION_CLASSES => $extensionClasses
         ]);
@@ -83,6 +84,9 @@ class PhpactorDispatcherFactory implements DispatcherFactory
             $extension->configure($resolver);
         }
 
+        $container->register(ResolverErrors::class, function () use ($resolver) {
+            return $resolver->errors();
+        });
         $parameters = $resolver->resolve($parameters);
 
         foreach ($extensions as $extension) {
