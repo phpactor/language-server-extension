@@ -43,11 +43,12 @@ class InvalidConfigListener implements ListenerProviderInterface
     public function handleInvalidConfig(): Promise
     {
         if ($this->errors->errors()) {
-            $this->clientApi->window()->showMessage()->warning(
+            $this->clientApi->window()->showMessage()->warning(sprintf(
+                'Phpactor configuration error: %s',
                 implode(', ', array_map(function (InvalidMap $error) {
                     return $error->getMessage();
                 }, $this->errors->errors()))
-            );
+            ));
         }
         return new Success();
     }
