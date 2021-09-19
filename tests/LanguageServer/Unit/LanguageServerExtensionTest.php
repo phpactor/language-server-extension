@@ -3,12 +3,14 @@
 namespace Phpactor\Extension\LanguageServer\Tests\Unit;
 
 use Phpactor\Extension\LanguageServer\LanguageServerExtension;
+use Phpactor\LanguageServerProtocol\ClientCapabilities;
 use Phpactor\LanguageServerProtocol\CodeActionRequest;
 use Phpactor\LanguageServerProtocol\InitializeParams;
 use Phpactor\LanguageServer\Core\Rpc\NotificationMessage;
 use Phpactor\LanguageServer\Core\Rpc\RequestMessage;
 use Phpactor\LanguageServer\Core\Server\Exception\ExitSession;
 use Phpactor\LanguageServer\Listener\WorkspaceListener;
+use Phpactor\LanguageServer\Test\ProtocolFactory;
 use RuntimeException;
 use function Amp\Promise\wait;
 use function Amp\delay;
@@ -151,7 +153,11 @@ class LanguageServerExtensionTest extends LanguageServerTestCase
 
     public function testEnableFileEvents(): void
     {
-        $serverTester = $this->createTester(null, [
+        $params = ProtocolFactory::initializeParams($this->workspace()->path('/'));
+        $params->capabilities = new ClientCapabilities([
+            'didChangeWatchedFiles' => ['dynamicRegistration' => true],
+        ]);
+        $serverTester = $this->createTester($params, [
             LanguageServerExtension::PARAM_FILE_EVENTS => true
         ]);
         $serverTester->initialize();
