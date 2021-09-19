@@ -9,6 +9,7 @@ use Phpactor\LanguageServer\Core\Rpc\NotificationMessage;
 use Phpactor\LanguageServer\Core\Rpc\RequestMessage;
 use Phpactor\LanguageServer\Core\Server\Exception\ExitSession;
 use Phpactor\LanguageServer\Listener\WorkspaceListener;
+use Phpactor\LanguageServer\WorkDoneProgress\ProgressNotifier;
 use RuntimeException;
 use function Amp\Promise\wait;
 use function Amp\delay;
@@ -160,5 +161,9 @@ class LanguageServerExtensionTest extends LanguageServerTestCase
         self::assertNotNull($message);
         assert($message instanceof RequestMessage);
         self::assertEquals('client/registerCapability', $message->method);
+    }
+
+    public function testRetrieveProgressNotifier(): void
+    {
     }
 }

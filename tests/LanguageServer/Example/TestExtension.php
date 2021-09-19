@@ -14,6 +14,7 @@ use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\LanguageServerProtocol\Range;
 use Phpactor\LanguageServerProtocol\TextDocumentItem;
 use Phpactor\LanguageServer\Core\CodeAction\CodeActionProvider;
+use Phpactor\LanguageServer\Core\Command\ClosureCommand;
 use Phpactor\LanguageServer\Core\Command\Command as CoreCommand;
 use Phpactor\LanguageServer\Core\Handler\Handler;
 use Phpactor\LanguageServer\Core\Rpc\NotificationMessage;
@@ -70,12 +71,9 @@ class TestExtension implements Extension
         }, [ LanguageServerExtension::TAG_SERVICE_PROVIDER => []]);
 
         $container->register('test.command', function (Container $container) {
-            return new class implements CoreCommand {
-                public function __invoke(string $text): Promise
-                {
-                    return new Success($text);
-                }
-            };
+            return new ClosureCommand(function (string $text): Promise {
+                return new Success($text);
+            });
         }, [
             LanguageServerExtension::TAG_COMMAND => [
                 'name' => 'echo',
