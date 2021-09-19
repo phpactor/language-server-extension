@@ -14,11 +14,15 @@ use Phpactor\Extension\LanguageServer\LanguageServerExtension;
 use Phpactor\LanguageServerProtocol\Range;
 use Phpactor\LanguageServerProtocol\TextDocumentItem;
 use Phpactor\LanguageServer\Core\CodeAction\CodeActionProvider;
+use Phpactor\LanguageServer\Core\Command\ClosureCommand;
 use Phpactor\LanguageServer\Core\Command\Command as CoreCommand;
+use Phpactor\LanguageServer\Core\Handler\ClosureHandler;
 use Phpactor\LanguageServer\Core\Handler\Handler;
 use Phpactor\LanguageServer\Core\Rpc\NotificationMessage;
 use Phpactor\LanguageServer\Core\Server\ClientApi;
 use Phpactor\LanguageServer\Core\Service\ServiceProvider;
+use Phpactor\LanguageServer\WorkDoneProgress\ProgressNotifier;
+use Phpactor\LanguageServer\WorkDoneProgress\WorkDoneToken;
 use Phpactor\MapResolver\Resolver;
 
 class TestExtension implements Extension
@@ -70,16 +74,29 @@ class TestExtension implements Extension
         }, [ LanguageServerExtension::TAG_SERVICE_PROVIDER => []]);
 
         $container->register('test.command', function (Container $container) {
-            return new class implements CoreCommand {
-                public function __invoke(string $text): Promise
-                {
-                    return new Success($text);
-                }
-            };
+            return new ClosureCommand(function (string $text): Promise {
+                return new Success($text);
+            });
         }, [
             LanguageServerExtension::TAG_COMMAND => [
                 'name' => 'echo',
             ],
+        ]);
+
+        $container->register('test.progress_notifier_handler', function (Container $container) {
+
+            return new ClosureHandler('test/progress_notifier', function () use ($container){
+                $notifier = $container->get(ProgressNotifier::class);
+                assert($notifier instanceof ProgressNotifier);
+                $token = WorkDoneToken::generate();
+                $notifier->begin($token, 'Test');
+                $notifier->report($token);
+                $notifier->end($token, 'Done');
+
+                return new Success(true);
+            });
+        }, [
+            LanguageServerExtension::TAG_METHOD_HANDLER => [],
         ]);
 
         $container->register('test.code_action_provider', function (Container $container) {

@@ -15,7 +15,7 @@
         "phpactor/console-extension": "^0.1.6",
         "phpactor/container": "^2.0.0",
         "phpactor/file-path-resolver-extension": "^0.3.4",
-        "phpactor/language-server": "^1.1.0",
+        "phpactor/language-server": "^1.1.1",
         "phpactor/logging-extension": "^0.3.4",
         "phpactor/text-document": "^1.2.3"
     },
@@ -26,7 +26,8 @@
         "phpactor/test-utils": "^1.1.3",
         "phpspec/prophecy-phpunit": "^2.0",
         "phpstan/phpstan": "~0.12.0",
-        "phpunit/phpunit": "^9.0"
+        "phpunit/phpunit": "^9.0",
+        "symfony/var-dumper": "^5.3"
     },
     "extra": {
         "branch-alias": {
