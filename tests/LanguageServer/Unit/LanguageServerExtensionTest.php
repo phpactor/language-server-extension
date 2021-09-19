@@ -163,7 +163,13 @@ class LanguageServerExtensionTest extends LanguageServerTestCase
         self::assertEquals('client/registerCapability', $message->method);
     }
 
-    public function testRetrieveProgressNotifier(): void
+    public function testProgressNotifier(): void
     {
+        $serverTester = $this->createTester(null, [
+            LanguageServerExtension::PARAM_FILE_EVENTS => true
+        ]);
+        $serverTester->initialize();
+        $response = wait($serverTester->notify('test/progress_notifier', []));
+        dump($response);
     }
 }
