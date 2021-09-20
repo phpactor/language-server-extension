@@ -13,6 +13,7 @@ use Phpactor\Extension\LanguageServer\Listener\InvalidConfigListener;
 use Phpactor\Extension\Logger\LoggingExtension;
 use Phpactor\Extension\Console\ConsoleExtension;
 use Phpactor\Extension\LanguageServer\Command\StartCommand;
+use Phpactor\LanguageServerProtocol\ClientCapabilities;
 use Phpactor\LanguageServer\Core\CodeAction\AggregateCodeActionProvider;
 use Phpactor\LanguageServer\Core\Command\CommandDispatcher;
 use Phpactor\LanguageServer\Core\Diagnostics\AggregateDiagnosticsProvider;
@@ -186,7 +187,11 @@ class LanguageServerExtension implements Extension
         ]);
 
         $container->register(DidChangeWatchedFilesListener::class, function (Container $container) {
-            return new DidChangeWatchedFilesListener($container->get(ClientApi::class), $container->getParameter(self::PARAM_FILE_EVENT_GLOBS));
+            return new DidChangeWatchedFilesListener(
+                $container->get(ClientApi::class),
+                $container->getParameter(self::PARAM_FILE_EVENT_GLOBS),
+                $container->get(ClientCapabilities::class),
+            );
         }, [
             self::TAG_LISTENER_PROVIDER => [],
         ]);
