@@ -8,6 +8,7 @@ use Phpactor\LanguageServerProtocol\CodeActionRequest;
 use Phpactor\LanguageServerProtocol\InitializeParams;
 use Phpactor\LanguageServer\Core\Rpc\NotificationMessage;
 use Phpactor\LanguageServer\Core\Rpc\RequestMessage;
+use Phpactor\LanguageServer\Core\Rpc\ResponseMessage;
 use Phpactor\LanguageServer\Core\Server\Exception\ExitSession;
 use Phpactor\LanguageServer\Listener\WorkspaceListener;
 use Phpactor\LanguageServer\Test\ProtocolFactory;
@@ -166,5 +167,18 @@ class LanguageServerExtensionTest extends LanguageServerTestCase
         self::assertNotNull($message);
         assert($message instanceof RequestMessage);
         self::assertEquals('client/registerCapability', $message->method);
+    }
+
+    public function testProgressNotifierFactory(): void
+    {
+        $serverTester = $this->createTester(null, [
+            LanguageServerExtension::PARAM_FILE_EVENTS => true,
+        ]);
+        $serverTester->initialize();
+        $response = $serverTester->requestAndWait('test/progress_notifier_factory', []);
+
+        self::assertInstanceOf(ResponseMessage::class, $response);
+        self::assertTrue($response->result);
+        self::assertNull($response->error);
     }
 }

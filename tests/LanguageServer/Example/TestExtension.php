@@ -15,10 +15,12 @@ use Phpactor\LanguageServerProtocol\Range;
 use Phpactor\LanguageServerProtocol\TextDocumentItem;
 use Phpactor\LanguageServer\Core\CodeAction\CodeActionProvider;
 use Phpactor\LanguageServer\Core\Command\Command as CoreCommand;
-use Phpactor\LanguageServer\Core\Handler\Handler;
+use Phpactor\LanguageServer\Core\Handler\ClosureHandler;
 use Phpactor\LanguageServer\Core\Rpc\NotificationMessage;
 use Phpactor\LanguageServer\Core\Server\ClientApi;
 use Phpactor\LanguageServer\Core\Service\ServiceProvider;
+use Phpactor\LanguageServer\WorkDoneProgress\ProgressNotifierFactory;
+use Phpactor\LanguageServer\WorkDoneProgress\WorkDoneToken;
 use Phpactor\MapResolver\Resolver;
 
 class TestExtension implements Extension
@@ -28,22 +30,30 @@ class TestExtension implements Extension
      */
     public function load(ContainerBuilder $container): void
     {
-        $container->register('test.handler', function (Container $container) {
-            return new class implements Handler {
-                public function methods(): array
-                {
-                    return ['test' => 'test'];
-                }
-
-                public function test()
-                {
-                    return new Success(new NotificationMessage('window/showMessage', [
-                        'type' => MessageType::INFO,
-                        'message' => 'Hallo',
-                    ]));
-                }
-            };
+        $container->register('test.handler', function (Container $container): ClosureHandler {
+            return new ClosureHandler('test', function (): Promise {
+                return new Success(new NotificationMessage('window/showMessage', [
+                    'type' => MessageType::INFO,
+                    'message' => 'Hallo',
+                ]));
+            });
         }, [ LanguageServerExtension::TAG_METHOD_HANDLER => []]);
+
+        $container->register('test.progress_notifier_factory', function (Container $container): ClosureHandler {
+            return new ClosureHandler('test/progress_notifier_factory', function () use ($container): Promise {
+                $notifierFactory = $container->get(ProgressNotifierFactory::class);
+                assert($notifierFactory instanceof ProgressNotifierFactory);
+                $token = WorkDoneToken::generate();
+                $notifier = $notifierFactory->create($token);
+                $notifier->begin('title');
+                $notifier->report();
+                $notifier->end();
+
+                return new Success(true);
+            });
+        }, [
+            LanguageServerExtension::TAG_METHOD_HANDLER => [],
+        ]);
 
         $container->register('test.service', function (Container $container) {
             return new class($container->get(ClientApi::class)) implements ServiceProvider {
@@ -58,7 +68,10 @@ class TestExtension implements Extension
                     return ['test'];
                 }
 
-                public function test()
+                /**
+                 * @return Promise<NotificationMessage>
+                 */
+                public function test(): Promise
                 {
                     $this->api->window()->showmessage()->info('service started');
                     return new Success(new NotificationMessage('window/showMessage', [
@@ -71,6 +84,9 @@ class TestExtension implements Extension
 
         $container->register('test.command', function (Container $container) {
             return new class implements CoreCommand {
+                /**
+                 * @return Promise<string>
+                 */
                 public function __invoke(string $text): Promise
                 {
                     return new Success($text);
