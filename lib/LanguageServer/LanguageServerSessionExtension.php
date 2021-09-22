@@ -13,8 +13,7 @@ use Phpactor\LanguageServer\Core\Server\ResponseWatcher\DeferredResponseWatcher;
 use Phpactor\LanguageServer\Core\Server\RpcClient;
 use Phpactor\LanguageServer\Core\Server\RpcClient\JsonRpcClient;
 use Phpactor\LanguageServer\Core\Server\Transmitter\MessageTransmitter;
-use Phpactor\LanguageServer\WorkDoneProgress\ClientCapabilityDependentProgressNotifier;
-use Phpactor\LanguageServer\WorkDoneProgress\ProgressNotifier;
+use Phpactor\LanguageServer\WorkDoneProgress\ProgressNotifierFactory;
 use Phpactor\MapResolver\Resolver;
 
 class LanguageServerSessionExtension implements Extension
@@ -66,8 +65,8 @@ class LanguageServerSessionExtension implements Extension
             return new JsonRpcClient($this->transmitter, $container->get(ResponseWatcher::class));
         });
 
-        $container->register(ProgressNotifier::class, function (Container $container) {
-            return new ClientCapabilityDependentProgressNotifier(
+        $container->register(ProgressNotifierFactory::class, function (Container $container) {
+            return new ProgressNotifierFactory(
                 $container->get(ClientApi::class),
                 $container->get(ClientCapabilities::class),
             );
