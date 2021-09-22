@@ -31,21 +31,13 @@ class TestExtension implements Extension
      */
     public function load(ContainerBuilder $container): void
     {
-        $container->register('test.handler', function (Container $container) {
-            return new class implements Handler {
-                public function methods(): array
-                {
-                    return ['test' => 'test'];
-                }
-
-                public function test()
-                {
-                    return new Success(new NotificationMessage('window/showMessage', [
-                        'type' => MessageType::INFO,
-                        'message' => 'Hallo',
-                    ]));
-                }
-            };
+        $container->register('test.handler', function (Container $container): ClosureHandler {
+            return new ClosureHandler('test', function (): Promise {
+                return new Success(new NotificationMessage('window/showMessage', [
+                    'type' => MessageType::INFO,
+                    'message' => 'Hallo',
+                ]));
+            });
         }, [ LanguageServerExtension::TAG_METHOD_HANDLER => []]);
 
         $container->register('test.progress_notifier_factory', function (Container $container): ClosureHandler {
@@ -77,7 +69,10 @@ class TestExtension implements Extension
                     return ['test'];
                 }
 
-                public function test()
+                /**
+                 * @return Promise<NotificationMessage>
+                 */
+                public function test(): Promise
                 {
                     $this->api->window()->showmessage()->info('service started');
                     return new Success(new NotificationMessage('window/showMessage', [
@@ -90,6 +85,9 @@ class TestExtension implements Extension
 
         $container->register('test.command', function (Container $container) {
             return new class implements CoreCommand {
+                /**
+                 * @return Promise<string>
+                 */
                 public function __invoke(string $text): Promise
                 {
                     return new Success($text);
