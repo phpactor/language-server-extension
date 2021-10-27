@@ -15,7 +15,7 @@
         "phpactor/console-extension": "^0.1.6",
         "phpactor/container": "^2.0.0",
         "phpactor/file-path-resolver-extension": "^0.3.4",
-        "phpactor/language-server": "^1.1.0",
+        "phpactor/language-server": "^1.1.1",
         "phpactor/logging-extension": "^0.3.4",
         "phpactor/text-document": "^1.2.3"
     },
